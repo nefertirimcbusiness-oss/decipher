@@ -1,0 +1,121 @@
+@import "tailwindcss";
+@import "./theme.css";
+
+/* ============================================
+   Decipher — Tailwind v4 Theme Integration
+   Maps the designer's CSS tokens into
+   Tailwind utility classes.
+   ============================================ */
+
+@theme inline {
+  /* ---------- Primary Colors ---------- */
+  --color-lilac: #D4B8E0;
+  --color-lilac-deep: #B891C9;
+  --color-lilac-light: #EDE0F4;
+  --color-white: #FFFFFF;
+  --color-buttercream: #FFF5E1;
+  --color-buttercream-dark: #F5E6C8;
+
+  /* ---------- Secondary Colors ---------- */
+  --color-sage: #B5C7A0;
+  --color-sage-light: #D4E3C4;
+  --color-coral: #E8A89A;
+  --color-coral-light: #F5D0C6;
+  --color-sky: #A8D4E8;
+  --color-sky-light: #D4ECF5;
+
+  /* ---------- Neutral Colors ---------- */
+  --color-charcoal: #2D2B3A;
+  --color-graphite: #4A4858;
+  --color-stone: #8B8999;
+  --color-mist: #D6D4E0;
+  --color-fog: #EBEAF0;
+
+  /* ---------- Semantic Colors ---------- */
+  --color-success: #7FB385;
+  --color-warning: #D4A65A;
+  --color-error: #C97B7B;
+
+  /* ---------- Fonts ---------- */
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'Quicksand', 'Segoe UI', 'Helvetica Neue', sans-serif;
+  --font-ui: 'Nunito', 'Segoe UI', sans-serif;
+  --font-handwritten: 'Dancing Script', cursive;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  /* ---------- Shadows ---------- */
+  --shadow-sm: 0 1px 3px rgba(45, 43, 58, 0.06);
+  --shadow-md: 0 4px 12px rgba(45, 43, 58, 0.08);
+  --shadow-lg: 0 8px 24px rgba(45, 43, 58, 0.10);
+  --shadow-xl: 0 12px 36px rgba(45, 43, 58, 0.12);
+
+  /* ---------- Radius ---------- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+body {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--color-charcoal);
+  background-color: var(--color-buttercream);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Headings use Playfair Display */
+h1, h2 { font-family: var(--font-heading); }
+h3, h4 { font-family: var(--font-body); }
+
+/* Links */
+a {
+  color: var(--color-lilac-deep);
+  transition: color 150ms ease;
+}
+a:hover {
+  color: var(--color-lilac);
+  text-decoration: underline;
+}
+
+/* Selection */
+::selection {
+  background: var(--color-lilac-light);
+  color: var(--color-charcoal);
+}
+
+/* Focus visible */
+:focus-visible {
+  outline: 2px solid var(--color-lilac);
+  outline-offset: 2px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--color-fog); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--color-mist); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-stone); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
+}

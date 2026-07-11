@@ -1,0 +1,16 @@
+{
+  "name": "Decipher",
+  "short_name": "Decipher",
+  "description": "A comforting space to log your memories with Savid the owl mentor",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fcf9f5",
+  "theme_color": "#b794e4",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
