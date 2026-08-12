@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const API_BASE = "https://eb044699c4cc4dada8cc7727a5002ea2.ctonew.app/api";
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
