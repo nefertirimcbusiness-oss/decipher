@@ -8,10 +8,16 @@ export default function SettingsPage() {
   const [name, setName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [subStatus, setSubStatus] = useState<{ plan: string; status: string; nextBilling: string; trialEnd: string } | null>(null);
+  const [subLoading, setSubLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelConfirm, setCancelConfirm] = useState(false);
 
   useEffect(() => {
     if (!auth.isAuthenticated()) return;
-    subscription.getStatus().then(setSubStatus).catch(() => {});
+    subscription.getStatus()
+      .then(setSubStatus)
+      .catch(() => {})
+      .finally(() => setSubLoading(false));
   }, []);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -21,9 +27,32 @@ export default function SettingsPage() {
     setIsSaving(false);
   };
 
+  const handleCancelSubscription = async () => {
+    setCancelling(true);
+    try {
+      await subscription.cancel();
+      setSubStatus((prev) => prev ? { ...prev, status: "cancelled" } : null);
+      setCancelConfirm(false);
+    } catch (err: any) {
+      alert(err.message || "Failed to cancel. Please try again.");
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   const handleLogout = () => {
     auth.logout();
     window.location.href = "/";
+  };
+
+  const statusLabel = (status: string) => {
+    switch (status) {
+      case "trialing": return "🟡 Trial";
+      case "active": return "🟢 Active";
+      case "cancelled": return "🔴 Cancelled";
+      case "past_due": return "🟠 Past Due";
+      default: return status;
+    }
   };
 
   return (
@@ -41,24 +70,80 @@ export default function SettingsPage() {
         </Card>
 
         <Card>
-          <h2 className="font-body text-h4 font-semibold text-charcoal mb-4">💳 Account</h2>
-          <div className="space-y-2 text-body text-graphite">
-            <p>📧 {auth.getUserId() ? "Active user" : "Not logged in"}</p>
-            {subStatus ? (
-              <>
-                <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-success" /><span>Subscription: {subStatus.status}</span></div>
-                <p className="text-body-small text-stone">Plan: {subStatus.plan}</p>
-                <p className="text-body-small text-stone">Next billing: {subStatus.nextBilling}</p>
-                <p className="text-body-small text-stone">Trial ends: {subStatus.trialEnd}</p>
-              </>
-            ) : (
-              <p className="text-body-small text-stone">Loading subscription info...</p>
-            )}
-          </div>
-          <div className="flex gap-3 mt-4">
-            <Button variant="primary" size="sm">Manage Subscription</Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout}>Log out</Button>
-          </div>
+          <h2 className="font-body text-h4 font-semibold text-charcoal mb-4">💳 Subscription</h2>
+          {subLoading ? (
+            <p className="text-body-small text-stone">Loading subscription info...</p>
+          ) : subStatus ? (
+            <>
+              <div className="space-y-2 text-body text-graphite mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">{statusLabel(subStatus.status)}</span>
+                  <span className="text-body-small text-stone">— {subStatus.plan} plan</span>
+                </div>
+                {subStatus.trialEnd && subStatus.status === "trialing" && (
+                  <p className="text-body-small text-stone">
+                    🕐 Trial ends: {new Date(subStatus.trialEnd).toLocaleDateString()}
+                  </p>
+                )}
+                {subStatus.nextBilling && subStatus.status === "active" && (
+                  <p className="text-body-small text-stone">
+                    💳 Next billing: {new Date(subStatus.nextBilling).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                {subStatus.status === "active" || subStatus.status === "trialing" ? (
+                  cancelConfirm ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-body-small text-graphite">Are you sure?</span>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        isLoading={cancelling}
+                        onClick={handleCancelSubscription}
+                      >
+                        Yes, cancel
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCancelConfirm(false)}
+                      >
+                        Never mind
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => setCancelConfirm(true)}
+                    >
+                      Cancel subscription
+                    </Button>
+                  )
+                ) : (
+                  <a href="/subscribe">
+                    <Button variant="primary" size="sm">
+                      🚀 Upgrade to Pro
+                    </Button>
+                  </a>
+                )}
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  Log out
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-body-small text-stone">No active subscription.</p>
+              <a href="/subscribe">
+                <Button variant="primary" size="sm">
+                  🚀 Start free trial
+                </Button>
+              </a>
+            </div>
+          )}
         </Card>
 
         <Card>

@@ -145,6 +145,12 @@ export const subscription = {
     });
   },
 
+  createCheckout() {
+    return request<{ checkoutUrl: string }>("/subscriptions/create", {
+      method: "POST",
+    });
+  },
+
   cancel() {
     return request<{ success: boolean }>("/subscriptions/cancel", {
       method: "POST",
