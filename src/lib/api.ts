@@ -133,9 +133,23 @@ export const savid = {
 
 // --- Subscription API ---
 
+export interface SubscriptionStatus {
+  plan: string;
+  status: string;
+  nextBilling: string;
+  trialEnd: string;
+}
+
 export const subscription = {
-  getStatus() {
-    return request<{ plan: string; status: string; nextBilling: string; trialEnd: string }>("/subscriptions");
+  getStatus(): Promise<SubscriptionStatus> {
+    // Backend returns a raw subscription row (plan_id, current_period_end,
+    // trial_end) or `{ status: "inactive" }` — normalize to a stable shape.
+    return request<Record<string, any>>("/subscriptions/status").then((s) => ({
+      plan: s.plan_id || s.plan || "Decipher Monthly",
+      status: s.status || "inactive",
+      nextBilling: s.current_period_end || s.nextBilling || "",
+      trialEnd: s.trial_end || s.trialEnd || "",
+    }));
   },
 
   createPaymentMethod(paymentMethodId: string) {
