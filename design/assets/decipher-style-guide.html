@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decipher — Design Style Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=IBM+Plex+Mono&family=Nunito:wght@500;600;700&family=Playfair+Display:wght@600;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../theme.css" />
+  <style>
+    /* Style Guide Specific Styles */
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      background: var(--color-buttercream);
+      padding: 0;
+    }
+
+    /* ── Layout ── */
+    .sg-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px 80px;
+    }
+
+    /* ── Header ── */
+    .sg-header {
+      background: linear-gradient(160deg, var(--color-lilac-light) 0%, var(--color-buttercream) 60%);
+      padding: 48px 32px;
+      text-align: center;
+      border-bottom: 2px solid var(--color-lilac-light);
+      margin-bottom: 48px;
+    }
+    .sg-header h1 {
+      font-family: var(--font-heading);
+      font-size: 2.5rem;
+      color: var(--color-charcoal);
+      margin-bottom: 8px;
+    }
+    .sg-header .sg-savid-icon {
+      font-size: 3.5rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .sg-header p {
+      font-family: var(--font-body);
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .sg-header .sg-tag {
+      display: inline-block;
+      background: var(--color-lilac);
+      color: var(--color-charcoal);
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-top: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ── Section ── */
+    .sg-section {
+      margin-bottom: 56px;
+    }
+    .sg-section-title {
+      font-family: var(--font-heading);
+      font-size: var(--text-h2);
+      color: var(--color-charcoal);
+      margin-bottom: 24px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--color-lilac-light);
+      position: relative;
+    }
+    .sg-section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 80px;
+      height: 2px;
+      background: var(--color-lilac);
+    }
+    .sg-section-desc {
+      font-family: var(--font-body);
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      font-size: var(--text-body);
+    }
+
+    /* ── Grid ── */
+    .sg-grid {
+      display: grid;
+      gap: 16px;
+    }
+    .sg-grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .sg-grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .sg-grid-4 { grid-template-columns: repeat(4, 1fr); }
+    .sg-grid-5 { grid-template-columns: repeat(5, 1fr); }
+    @media (max-width: 768px) {
+      .sg-grid-2, .sg-grid-3, .sg-grid-4, .sg-grid-5 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .sg-grid-2, .sg-grid-3, .sg-grid-4, .sg-grid-5 { grid-template-columns: 1fr; }
+    }
+
+    /* ── Color Swatch ── */
+    .sg-swatch {
+      border-radius: var(--radius-md);
+      padding: 20px;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-mist);
+      position: relative;
+      overflow: hidden;
+    }
+    .sg-swatch-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--color-charcoal);
+      background: rgba(255,255,255,0.85);
+      padding: 4px 8px;
+      border-radius: 4px;
+      backdrop-filter: blur(4px);
+    }
+    .sg-swatch-hex {
+      font-family: var(--font-mono);
+      font-size: 0.675rem;
+      color: var(--color-graphite);
+      background: rgba(255,255,255,0.7);
+      padding: 2px 8px 4px;
+      border-radius: 0 0 4px 4px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── Typography Samples ── */
+    .sg-type-sample {
+      padding: 16px;
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      border-left: 3px solid var(--color-lilac);
+    }
+    .sg-type-sample .sg-tag-small {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* ── Component Preview ── */
+    .sg-component-preview {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-mist);
+      margin-bottom: 24px;
+    }
+    .sg-component-preview.dark-bg {
+      background: var(--color-buttercream);
+    }
+    .sg-component-label {
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+    .sg-component-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* ── Button Row ── */
+    .sg-btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* ── Scrapbook Demo ── */
+    .sg-scrapbook-demo {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* ── Savid Demo ── */
+    .sg-savid-demo {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 500px;
+    }
+
+    /* ── Audio Demo ── */
+    .sg-audio-demo {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* ── Empty States ── */
+    .sg-empty-demo {
+      max-width: 350px;
+      margin: 0 auto;
+    }
+
+    /* ── Form Demo ── */
+    .sg-form-demo {
+      max-width: 400px;
+    }
+
+    /* ── History Demo ── */
+    .sg-history-demo {
+      max-width: 450px;
+      margin: 0 auto;
+    }
+
+    /* ── Footer ── */
+    .sg-footer {
+      text-align: center;
+      padding: 32px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--color-mist);
+      margin-top: 48px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════ HEADER ════════ -->
+  <header class="sg-header">
+    <span class="sg-savid-icon">🦉</span>
+    <h1>Decipher Design Style Guide</h1>
+    <p>A visual reference for the Decipher app — a comforting, interactive space for users navigating trauma and memory loss.</p>
+    <span class="sg-tag">v1.0 — Lilac / Buttercream / White</span>
+  </header>
+
+  <div class="sg-container">
+
+    <!-- ════════ 1. COLOR PALETTE ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Color Palette</h2>
+      <p class="sg-section-desc">All colors used throughout the Decipher app. Refer to these by their CSS custom property names.</p>
+
+      <h3 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">Primary Colors</h3>
+      <div class="sg-grid sg-grid-5">
+        <div class="sg-swatch" style="background:#D4B8E0;">
+          <div class="sg-swatch-label">--color-lilac</div>
+          <div class="sg-swatch-hex">#D4B8E0</div>
+        </div>
+        <div class="sg-swatch" style="background:#B891C9;">
+          <div class="sg-swatch-label">--color-lilac-deep</div>
+          <div class="sg-swatch-hex">#B891C9</div>
+        </div>
+        <div class="sg-swatch" style="background:#EDE0F4;">
+          <div class="sg-swatch-label">--color-lilac-light</div>
+          <div class="sg-swatch-hex">#EDE0F4</div>
+        </div>
+        <div class="sg-swatch" style="background:#FFFFFF;border:2px solid #e0e0e0;">
+          <div class="sg-swatch-label">--color-white</div>
+          <div class="sg-swatch-hex">#FFFFFF</div>
+        </div>
+        <div class="sg-swatch" style="background:#FFF5E1;">
+          <div class="sg-swatch-label">--color-buttercream</div>
+          <div class="sg-swatch-hex">#FFF5E1</div>
+        </div>
+      </div>
+
+      <h3 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;color:var(--text-secondary);margin:24px 0 8px;">Secondary Colors</h3>
+      <div class="sg-grid sg-grid-5">
+        <div class="sg-swatch" style="background:#B5C7A0;">
+          <div class="sg-swatch-label">--color-sage</div>
+          <div class="sg-swatch-hex">#B5C7A0</div>
+        </div>
+        <div class="sg-swatch" style="background:#D4E3C4;">
+          <div class="sg-swatch-label">--color-sage-light</div>
+          <div class="sg-swatch-hex">#D4E3C4</div>
+        </div>
+        <div class="sg-swatch" style="background:#E8A89A;">
+          <div class="sg-swatch-label">--color-coral</div>
+          <div class="sg-swatch-hex">#E8A89A</div>
+        </div>
+        <div class="sg-swatch" style="background:#A8D4E8;">
+          <div class="sg-swatch-label">--color-sky</div>
+          <div class="sg-swatch-hex">#A8D4E8</div>
+        </div>
+        <div class="sg-swatch" style="background:#D4ECF5;">
+          <div class="sg-swatch-label">--color-sky-light</div>
+          <div class="sg-swatch-hex">#D4ECF5</div>
+        </div>
+      </div>
+
+      <h3 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;color:var(--text-secondary);margin:24px 0 8px;">Neutral Colors</h3>
+      <div class="sg-grid sg-grid-5">
+        <div class="sg-swatch" style="background:#2D2B3A;">
+          <div class="sg-swatch-label" style="color:white;">--color-charcoal</div>
+          <div class="sg-swatch-hex" style="color:rgba(255,255,255,0.7);">#2D2B3A</div>
+        </div>
+        <div class="sg-swatch" style="background:#4A4858;">
+          <div class="sg-swatch-label" style="color:white;">--color-graphite</div>
+          <div class="sg-swatch-hex" style="color:rgba(255,255,255,0.7);">#4A4858</div>
+        </div>
+        <div class="sg-swatch" style="background:#8B8999;">
+          <div class="sg-swatch-label" style="color:white;">--color-stone</div>
+          <div class="sg-swatch-hex" style="color:rgba(255,255,255,0.7);">#8B8999</div>
+        </div>
+        <div class="sg-swatch" style="background:#D6D4E0;">
+          <div class="sg-swatch-label">--color-mist</div>
+          <div class="sg-swatch-hex">#D6D4E0</div>
+        </div>
+        <div class="sg-swatch" style="background:#EBEAF0;">
+          <div class="sg-swatch-label">--color-fog</div>
+          <div class="sg-swatch-hex">#EBEAF0</div>
+        </div>
+      </div>
+
+      <h3 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;color:var(--text-secondary);margin:24px 0 8px;">Semantic Colors</h3>
+      <div class="sg-grid sg-grid-3">
+        <div class="sg-swatch" style="background:#7FB385;">
+          <div class="sg-swatch-label">--color-success</div>
+          <div class="sg-swatch-hex">#7FB385</div>
+        </div>
+        <div class="sg-swatch" style="background:#D4A65A;">
+          <div class="sg-swatch-label">--color-warning</div>
+          <div class="sg-swatch-hex">#D4A65A</div>
+        </div>
+        <div class="sg-swatch" style="background:#C97B7B;">
+          <div class="sg-swatch-label" style="color:white;">--color-error</div>
+          <div class="sg-swatch-hex" style="color:rgba(255,255,255,0.7);">#C97B7B</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 2. TYPOGRAPHY ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Typography</h2>
+      <p class="sg-section-desc">Font families and type scale for headings, body text, UI labels, and decorative elements.</p>
+
+      <div class="sg-grid sg-grid-2">
+        <div>
+          <h3 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;color:var(--text-secondary);margin-bottom:12px;">Font Families</h3>
+          <div class="sg-type-sample"><span class="sg-tag-small">--font-heading</span><span style="font-family:'Playfair Display', serif;font-size:1.25rem;">Playfair Display — For headings</span></div>
+          <div class="sg-type-sample"><span class="sg-tag-small">--font-body</span><span style="font-family:'Quicksand', sans-serif;font-size:1rem;">Quicksand — For body text, clean and warm</span></div>
+          <div class="sg-type-sample"><span class="sg-tag-small">--font-ui</span><span style="font-family:'Nunito', sans-serif;font-size:0.9rem;">Nunito — For buttons, labels, UI elements</span></div>
+          <div class="sg-type-sample"><span class="sg-tag-small">--font-handwritten</span><span style="font-family:'Dancing Script', cursive;font-size:1.25rem;">Dancing Script — For scrapbook headings, quotes</span></div>
+          <div class="sg-type-sample"><span class="sg-tag-small">--font-mono</span><span style="font-family:'IBM Plex Mono', monospace;font-size:0.85rem;">IBM Plex Mono — For timestamps, code</span></div>
+        </div>
+        <div>
+          <h3 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;color:var(--text-secondary);margin-bottom:12px;">Type Scale</h3>
+          <div class="sg-type-sample"><span class="sg-tag-small">--text-h1 / 2.25rem Playfair Display 700</span><span style="font-family:'Playfair Display',serif;font-size:2.25rem;font-weight:700;line-height:1.2;">Hero Heading</span></div>
+          <div class="sg-type-sample"><span class="sg-tag-small">--text-h2 / 1.75rem Playfair Display 600</span><span style="font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:600;line-height:1.3;">Section Heading</span></div>
+          <div class="sg-type-sample"><span class="sg-tag-small">--text-h3 / 1.375rem Quicksand 600</span><span style="font-family:'Quicksand',sans-serif;font-size:1.375rem;font-weight:600;">Card Title</span></div>
+          <div class="sg-type-sample"><span class="sg-tag-small">--text-body / 0.9375rem Quicksand 400</span><span style="font-family:'Quicksand',sans-serif;font-size:0.9375rem;">Regular body text for reading comfort. This is the default size for all paragraph content throughout the app. Generous line height for readability.</span></div>
+          <div class="sg-type-sample"><span class="sg-tag-small">--text-caption / 0.75rem Nunito 500</span><span style="font-family:'Nunito',sans-serif;font-size:0.75rem;font-weight:500;">Small labels, timestamps, metadata</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 3. SPACING & RADIUS ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Spacing &amp; Border Radius</h2>
+      <p class="sg-section-desc">4px base spacing system. All spacing tokens are multiples of 4.</p>
+      <div class="sg-grid sg-grid-2">
+        <div>
+          <h3 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;color:var(--text-secondary);margin-bottom:12px;">Spacing Tokens</h3>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><span style="font-family:var(--font-mono);font-size:0.75rem;min-width:110px;">--space-xs</span><div style="width:4px;height:24px;background:var(--color-lilac);border-radius:2px;"></div><span style="font-size:0.75rem;color:var(--text-muted);">4px</span></div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><span style="font-family:var(--font-mono);font-size:0.75rem;min-width:110px;">--space-sm</span><div style="width:8px;height:24px;background:var(--color-lilac);border-radius:2px;"></div><span style="font-size:0.75rem;color:var(--text-muted);">8px</span></div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><span style="font-family:var(--font-mono);font-size:0.75rem;min-width:110px;">--space-md</span><div style="width:12px;height:24px;background:var(--color-lilac);border-radius:2px;"></div><span style="font-size:0.75rem;color:var(--text-muted);">12px</span></div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><span style="font-family:var(--font-mono);font-size:0.75rem;min-width:110px;">--space-lg</span><div style="width:16px;height:24px;background:var(--color-lilac);border-radius:2px;"></div><span style="font-size:0.75rem;color:var(--text-muted);">16px</span></div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><span style="font-family:var(--font-mono);font-size:0.75rem;min-width:110px;">--space-xl</span><div style="width:24px;height:24px;background:var(--color-lilac);border-radius:2px;"></div><span style="font-size:0.75rem;color:var(--text-muted);">24px</span></div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><span style="font-family:var(--font-lilac);font-size:0.75rem;min-width:110px !important;">--space-2xl</span><div style="width:32px;height:24px;background:var(--color-lilac-deep);border-radius:2px;"></div><span style="font:var(--font-mono);font-size:0.75rem;color:var(--text-muted);font-family:monospace;">32px</span></div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><span style="font-family:var(--font-mono);font-size:0.75rem;min-width:110px;">--space-3xl</span><div style="width:48px;height:24px;background:var(--color-lilac-deep);border-radius:2px;"></div><span style="font-size:0.75rem;color:var(--text-muted);">48px</span></div>
+          <div style="display:flex;gap:8px;align-items:center;"><span style="font-family:var(--font-mono);font-size:0.75rem;min-width:110px;">--space-4xl</span><div style="width:64px;height:24px;background:var(--color-lilac-deep);border-radius:2px;"></div><span style="font-size:0.75rem;color:var(--text-muted);">64px</span></div>
+        </div>
+        <div>
+          <h3 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;color:var(--text-secondary);margin-bottom:12px;">Border Radius Tokens</h3>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <div style="text-align:center;"><div style="width:60px;height:60px;background:var(--color-lilac-light);border-radius:4px;border:1px solid var(--color-mist);margin-bottom:4px;"></div><span style="font-family:var(--font-mono);font-size:0.65rem;">--radius-sm<br/>4px</span></div>
+            <div style="text-align:center;"><div style="width:60px;height:60px;background:var(--color-lilac-light);border-radius:8px;border:1px solid var(--color-mist);margin-bottom:4px;"></div><span style="font-family:var(--font-mono);font-size:0.65rem;">--radius-md<br/>8px</span></div>
+            <div style="text-align:center;"><div style="width:60px;height:60px;background:var(--color-lilac-light);border-radius:12px;border:1px solid var(--color-mist);margin-bottom:4px;"></div><span style="font-family:var(--font-mono);font-size:0.65rem;">--radius-lg<br/>12px</span></div>
+            <div style="text-align:center;"><div style="width:60px;height:60px;background:var(--color-lilac-light);border-radius:16px;border:1px solid var(--color-mist);margin-bottom:4px;"></div><span style="font-family:var(--font-mono);font-size:0.65rem;">--radius-xl<br/>16px</span></div>
+            <div style="text-align:center;"><div style="width:60px;height:60px;background:var(--color-lilac-light);border-radius:9999px;border:1px solid var(--color-mist);margin-bottom:4px;"></div><span style="font-family:var(--font-mono);font-size:0.65rem;">--radius-full<br/>9999px</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 4. BUTTONS ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Buttons</h2>
+      <p class="sg-section-desc">Button variants with hover states. All buttons have 44px minimum touch targets.</p>
+      <div class="sg-component-preview">
+        <div class="sg-component-label">Button Variants</div>
+        <div class="sg-btn-row">
+          <button class="btn btn-primary">✨ Save Memory</button>
+          <button class="btn btn-secondary">Cancel</button>
+          <button class="btn btn-ghost">Delete</button>
+          <button class="btn btn-danger">Delete Account</button>
+        </div>
+        <div style="margin-top:16px;" class="sg-btn-row">
+          <button class="btn btn-primary btn-sm">Small</button>
+          <button class="btn btn-primary btn-lg">Large Button</button>
+          <button class="btn btn-primary" disabled>Disabled</button>
+          <button class="btn btn-icon btn-primary">🦉</button>
+        </div>
+        <div style="margin-top:16px;" class="sg-btn-row">
+          <button class="btn btn-primary" style="box-shadow:var(--shadow-glow-lilac);">✨ Glow State</button>
+          <button class="btn btn-primary" style="background:var(--color-lilac-deep);color:white;">Hovered State</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 5. FORM ELEMENTS ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Form Elements</h2>
+      <div class="sg-component-preview sg-form-demo">
+        <div class="sg-component-label">Input Fields</div>
+        <div class="input-group">
+          <label class="input-label">Memory Title</label>
+          <input class="input-field" type="text" placeholder="Title your memory..." />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Your Story</label>
+          <textarea class="textarea-field" placeholder="What happened? Take your time...">The park was golden that afternoon. I remember the light through the branches...</textarea>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Date (Error State)</label>
+          <input class="input-field input-error" type="text" placeholder="MM/DD/YYYY" value="invalid" />
+          <span class="error-message">Please enter a valid date</span>
+        </div>
+        <div style="margin-top:8px;">
+          <label class="input-label">Focused State</label>
+          <input class="input-field" type="text" placeholder="Notice the purple glow..." style="border-color:var(--color-lilac);box-shadow:0 0 0 3px rgba(212,184,224,0.2);" />
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 6. CARDS ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Cards</h2>
+      <div class="sg-grid sg-grid-3">
+        <div class="card">
+          <h3 style="font-family:var(--font-body);font-size:var(--text-h4);margin-bottom:8px;">Standard Card</h3>
+          <p style="font-size:var(--text-body-small);color:var(--text-secondary);">Used for content sections, settings panels, and information display. Rounded corners with subtle shadow.</p>
+        </div>
+        <div class="card card-clickable">
+          <h3 style="font-family:var(--font-body);font-size:var(--text-h4);margin-bottom:8px;">Clickable Card</h3>
+          <p style="font-size:var(--text-body-small);color:var(--text-secondary);">Lifts on hover with increased shadow. Used for memory thumbnails and selectable items.</p>
+        </div>
+        <div class="card card-surface">
+          <h3 style="font-family:var(--font-body);font-size:var(--text-h4);margin-bottom:8px;">Surface Card</h3>
+          <p style="font-size:var(--text-body-small);color:var(--text-secondary);">Lilac-tinted background for distinction. Used for secondary content and highlighted areas.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 7. SCRAPBOOK PAGE ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Scrapbook Page</h2>
+      <p class="sg-section-desc">The core memory display — each entry renders as a beautiful scrapbook page with decorative elements.</p>
+      <div class="sg-component-preview dark-bg">
+        <div class="sg-scrapbook-demo">
+          <div class="scrapbook-page">
+            <div class="scrapbook-heading">✨ The Day We Met ✨</div>
+            <p style="font-size:var(--text-body);margin-bottom:8px;">The park was golden that afternoon. Leaves everywhere, and the light through the branches painted everything in warm colors. I remember the crunch of leaves underfoot, the cool breeze, and the way you smiled when you saw me.</p>
+            <div class="scrapbook-evidence">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <span style="font-size:1.5rem;">🎤</span>
+                <div style="flex:1;">
+                  <div style="font-family:var(--font-ui);font-size:0.8rem;font-weight:600;color:var(--text-secondary);">Audio Memory</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);">"I remember the crunch of leaves..."</div>
+                  <div style="display:flex;gap:4px;margin-top:4px;">
+                    <span style="font-size:0.75rem;">⏪ ▶️ ⏩</span>
+                    <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;">0:32</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <span class="scrapbook-decoration">🌸</span>
+            <div style="margin-top:12px;padding:12px;border-left:3px solid var(--color-lilac);background:var(--color-lilac-light);border-radius:0 var(--radius-sm) var(--radius-sm) 0;">
+              <div style="font-family:var(--font-ui);font-size:0.7rem;font-weight:700;color:var(--color-lilac-deep);">🦉 Savid's Reflection</div>
+              <p style="font-size:0.85rem;color:var(--text-secondary);margin:4px 0 0;">"Details like the light through branches... those are the colors of real memories. This is a beautiful record."</p>
+            </div>
+            <div style="margin-top:12px;font-size:0.75rem;color:var(--text-muted);display:flex;align-items:center;gap:4px;">
+              ✏️ Edited 2 times <a href="#" style="margin-left:auto;font-size:0.75rem;">View edit history →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 8. SAVID CHAT BUBBLE ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Savid Chat Bubble</h2>
+      <p class="sg-section-desc">The AI owl mentor speaks in gentle, insightful messages throughout the app.</p>
+      <div class="sg-component-preview">
+        <div class="sg-savid-demo">
+          <div class="savid-container">
+            <div class="savid-avatar">🦉</div>
+            <div class="savid-bubble">
+              <div class="savid-name">Savid</div>
+              <p class="savid-text">That's a really good detail to hold onto. What do you remember feeling right after?</p>
+            </div>
+          </div>
+          <div class="savid-container" style="justify-content:flex-end;">
+            <div style="background:var(--color-lilac-light);border-radius:var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);padding:12px 16px;max-width:300px;">
+              <p style="font-size:0.9rem;margin:0;">I felt safe. Really safe, for the first time in a while.</p>
+            </div>
+          </div>
+          <div class="savid-container">
+            <div class="savid-avatar">🦉</div>
+            <div class="savid-bubble">
+              <div class="savid-name">Savid</div>
+              <p class="savid-text">That's beautiful. Let's hold onto that feeling. What else comes to mind when you think about that moment?</p>
+            </div>
+          </div>
+          <div class="savid-container">
+            <div class="savid-avatar">🦉</div>
+            <div class="savid-bubble">
+              <div class="savid-name">Savid is thinking...</div>
+              <div class="savid-thinking">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 9. AUDIO RECORDER ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Audio Recorder</h2>
+      <div class="sg-component-preview">
+        <div class="sg-audio-demo">
+          <div class="audio-recorder">
+            <div style="font-size:2rem;margin-bottom:8px;">🎤</div>
+            <h3 style="font-family:var(--font-body);font-size:var(--text-h4);margin-bottom:4px;">Record a Voice Memory</h3>
+            <div class="audio-waveform recording">
+              <div class="bar" style="height:20px;"></div>
+              <div class="bar" style="height:35px;"></div>
+              <div class="bar" style="height:15px;"></div>
+              <div class="bar" style="height:45px;"></div>
+              <div class="bar" style="height:25px;"></div>
+              <div class="bar" style="height:50px;"></div>
+              <div class="bar" style="height:30px;"></div>
+              <div class="bar" style="height:40px;"></div>
+              <div class="bar" style="height:18px;"></div>
+              <div class="bar" style="height:48px;"></div>
+              <div class="bar" style="height:22px;"></div>
+              <div class="bar" style="height:38px;"></div>
+            </div>
+            <div class="audio-recording-indicator">
+              <span class="dot"></span>
+              Recording... 0:12
+            </div>
+            <div style="display:flex;gap:12px;justify-content:center;margin:16px 0;">
+              <button class="btn btn-secondary btn-sm">⏸️ Pause</button>
+              <button class="btn btn-danger btn-sm">⏹️ Stop</button>
+            </div>
+            <div class="savid-container" style="margin-bottom:0;">
+              <div class="savid-avatar" style="width:36px;height:36px;font-size:1.2rem;">🦉</div>
+              <div class="savid-bubble" style="padding:8px 12px;">
+                <p class="savid-text" style="font-size:0.85rem;">"Whenever you're ready. No rush."</p>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;justify-content:center;margin-top:16px;">
+            <button class="btn btn-primary btn-sm">✓ Use Recording</button>
+            <button class="btn btn-ghost btn-sm">🗑️ Discard</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 10. EDIT HISTORY ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Edit History Timeline</h2>
+      <div class="sg-component-preview">
+        <div class="sg-history-demo">
+          <h3 style="font-family:var(--font-body);font-size:var(--text-h4);margin-bottom:16px;">📝 Edit History &mdash; "The Day We Met"</h3>
+          <div class="history-timeline">
+            <div class="history-item">
+              <div class="history-timestamp">🕐 Jun 14, 2026 — 3:42 PM</div>
+              <div class="history-reason">Added more sensory details I remembered</div>
+              <a href="#" style="font-size:0.8rem;">View version →</a>
+            </div>
+            <div class="history-item">
+              <div class="history-timestamp">🕐 Jun 12, 2026 — 8:15 PM</div>
+              <div class="history-reason">Corrected the date — it was June, not May</div>
+              <a href="#" style="font-size:0.8rem;">View version →</a>
+            </div>
+            <div class="history-item original">
+              <div class="history-timestamp">🕐 Jun 10, 2026 — 9:30 AM</div>
+              <div style="background:var(--color-sage-light);display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-family:var(--font-ui);font-weight:600;margin:4px 0;">★ Original entry</div>
+              <a href="#" style="font-size:0.8rem;display:block;">View version →</a>
+            </div>
+          </div>
+          <div class="savid-container" style="margin-top:16px;">
+            <div class="savid-avatar" style="width:36px;height:36px;font-size:1.2rem;">🦉</div>
+            <div class="savid-bubble" style="padding:8px 12px;">
+              <p class="savid-text" style="font-size:0.85rem;">"Every edit is a step in your story. Each version matters."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 11. MEMORY THUMBNAILS ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Memory Thumbnails (Dashboard Grid)</h2>
+      <div class="sg-grid sg-grid-4">
+        <div class="memory-thumbnail">
+          <div class="memory-thumbnail-date">June 14</div>
+          <div class="memory-thumbnail-title">The Day We Met</div>
+          <div class="memory-thumbnail-badges">
+            <span class="memory-thumbnail-badge">🎤</span>
+            <span class="memory-thumbnail-badge">📷</span>
+          </div>
+        </div>
+        <div class="memory-thumbnail">
+          <div class="memory-thumbnail-date">June 10</div>
+          <div class="memory-thumbnail-title">Rainy Morning</div>
+          <div class="memory-thumbnail-badges">
+            <span class="memory-thumbnail-badge">🎤</span>
+          </div>
+        </div>
+        <div class="memory-thumbnail">
+          <div class="memory-thumbnail-date">June 8</div>
+          <div class="memory-thumbnail-title">A Walk in the Garden</div>
+          <div class="memory-thumbnail-badges">
+            <span class="memory-thumbnail-badge">📷</span>
+          </div>
+        </div>
+        <div class="memory-thumbnail-add">
+          <span style="font-size:2rem;">➕</span>
+          <span>New Memory</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 12. PROGRESS STREAK ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Progress &amp; Streak Display</h2>
+      <div class="progress-card" style="max-width:500px;">
+        <div style="display:flex;gap:32px;flex-wrap:wrap;">
+          <div class="streak-display">
+            <span class="flame">🔥</span>
+            <span>5-day streak</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:1.25rem;">🏆</span>
+            <span style="font-family:var(--font-ui);font-weight:600;">12 entries this month</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:1.25rem;">⏳</span>
+            <span style="font-family:var(--font-ui);font-weight:600;">Avg: 4 memories/week</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 13. EMPTY STATES ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Empty States</h2>
+      <div class="sg-grid sg-grid-2">
+        <div class="empty-state">
+          <div class="empty-state-icon">📖</div>
+          <div class="empty-state-text">Your scrapbook is empty...</div>
+          <div class="empty-state-subtext">"Every story starts with a single page. Whenever you're ready, I'm here." — Savid</div>
+          <button class="btn btn-primary">✨ Write Your First Memory</button>
+        </div>
+        <div class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <div class="empty-state-text">No memories found</div>
+          <div class="empty-state-subtext">Try different words — sometimes the details change how we describe things.</div>
+          <button class="btn btn-ghost">← Clear Search</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 14. NAVIGATION ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Bottom Navigation</h2>
+      <p class="sg-section-desc">Mobile navigation bar (visible on screens &lt; 769px). Fixed to the bottom.</p>
+      <div class="nav-bottom" style="position:relative;border-radius:var(--radius-md);margin-bottom:12px;">
+        <a class="nav-bottom-item active" href="#">
+          <span class="nav-icon">📖</span>
+          Memories
+        </a>
+        <a class="nav-bottom-item" href="#">
+          <span class="nav-icon">🦉</span>
+          Savid
+        </a>
+        <a class="nav-bottom-item" href="#">
+          <span class="nav-icon">📊</span>
+          Progress
+        </a>
+        <a class="nav-bottom-item" href="#">
+          <span class="nav-icon">⚙️</span>
+          Settings
+        </a>
+      </div>
+    </section>
+
+    <!-- ════════ 15. SHADOWS ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Shadows</h2>
+      <div class="sg-grid sg-grid-5">
+        <div style="width:100px;height:100px;background:var(--bg-card);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;"><span style="font-size:0.65rem;text-align:center;color:var(--text-muted);">--shadow-sm</span></div>
+        <div style="width:100px;height:100px;background:var(--bg-card);border-radius:var(--radius-md);box-shadow:var(--shadow-md);display:flex;align-items:center;justify-content:center;"><span style="font-size:0.65rem;text-align:center;color:var(--text-muted);">--shadow-md</span></div>
+        <div style="width:100px;height:100px;background:var(--bg-card);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);display:flex;align-items:center;justify-content:center;"><span style="font-size:0.65rem;text-align:center;color:var(--text-muted);">--shadow-lg</span></div>
+        <div style="width:100px;height:100px;background:var(--color-lilac-light);border-radius:var(--radius-md);box-shadow:var(--shadow-glow-lilac);display:flex;align-items:center;justify-content:center;"><span style="font-size:0.65rem;text-align:center;color:var(--color-charcoal);">glow-lilac</span></div>
+        <div style="width:100px;height:100px;background:var(--color-buttercream);border-radius:var(--radius-md);box-shadow:var(--shadow-glow-warm);display:flex;align-items:center;justify-content:center;"><span style="font-size:0.65rem;text-align:center;color:var(--color-charcoal);">glow-warm</span></div>
+      </div>
+    </section>
+
+    <!-- ════════ 16. SAVID CHARACTER SHEET ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">Savid Character — Expressions</h2>
+      <p class="sg-section-desc">The AI owl mentor character in 3 key expressions. Generated images stored at <code style="font-family:var(--font-mono);font-size:0.8rem;">/home/team/shared/assets/</code>.</p>
+      <div class="sg-grid sg-grid-3">
+        <div style="text-align:center;padding:16px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+          <div style="width:100%;aspect-ratio:1;background:linear-gradient(135deg, var(--color-lilac-light), var(--color-buttercream));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:4rem;margin-bottom:12px;">
+            🦉
+          </div>
+          <h4 style="font-family:var(--font-ui);font-weight:600;">Welcoming</h4>
+          <a href="savid-welcoming.png" target="_blank" style="font-size:0.8rem;color:var(--color-lilac-deep);">savid-welcoming.png</a>
+        </div>
+        <div style="text-align:center;padding:16px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+          <div style="width:100%;aspect-ratio:1;background:linear-gradient(135deg, var(--color-lilac-light), var(--color-buttercream));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:4rem;margin-bottom:12px;">
+            🤔
+          </div>
+          <h4 style="font-family:var(--font-ui);font-weight:600;">Thoughtful</h4>
+          <a href="savid-thoughtful.png" target="_blank" style="font-size:0.8rem;color:var(--color-lilac-deep);">savid-thoughtful.png</a>
+        </div>
+        <div style="text-align:center;padding:16px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+          <div style="width:100%;aspect-ratio:1;background:linear-gradient(135deg, var(--color-lilac-light), var(--color-buttercream));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:4rem;margin-bottom:12px;">
+            🌟
+          </div>
+          <h4 style="font-family:var(--font-ui);font-weight:600;">Encouraging</h4>
+          <a href="savid-encouraging.png" target="_blank" style="font-size:0.8rem;color:var(--color-lilac-deep);">savid-encouraging.png</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ 17. MOCKUP GALLERY ════════ -->
+    <section class="sg-section">
+      <h2 class="sg-section-title">UI Mockup Gallery</h2>
+      <p class="sg-section-desc">Full-screen visual mockups of all key app screens. Click to view full size.</p>
+      <div class="sg-grid sg-grid-3">
+        <div style="text-align:center;padding:12px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+          <a href="dashboard-mockup.png" target="_blank">
+            <div style="width:100%;aspect-ratio:2/3;background:linear-gradient(135deg, var(--color-lilac-light), var(--color-buttercream));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:8px;overflow:hidden;border:1px solid var(--color-mist);">
+              📊
+            </div>
+          </a>
+          <h4 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;">Dashboard</h4>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+          <a href="entry-form-mockup.png" target="_blank">
+            <div style="width:100%;aspect-ratio:2/3;background:linear-gradient(135deg, var(--color-lilac-light), var(--color-buttercream));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:8px;overflow:hidden;border:1px solid var(--color-mist);">
+              ✏️
+            </div>
+          </a>
+          <h4 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;">Entry Form</h4>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+          <a href="scrapbook-page.png" target="_blank">
+            <div style="width:100%;aspect-ratio:2/3;background:linear-gradient(135deg, var(--color-lilac-light), var(--color-buttercream));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:8px;overflow:hidden;border:1px solid var(--color-mist);">
+              📖
+            </div>
+          </a>
+          <h4 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;">Scrapbook Page</h4>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+          <a href="audio-recorder-mockup.png" target="_blank">
+            <div style="width:100%;aspect-ratio:2/3;background:linear-gradient(135deg, var(--color-lilac-light), var(--color-buttercream));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:8px;overflow:hidden;border:1px solid var(--color-mist);">
+              🎤
+            </div>
+          </a>
+          <h4 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;">Audio Recorder</h4>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+          <a href="edit-history-mockup.png" target="_blank">
+            <div style="width:100%;aspect-ratio:2/3;background:linear-gradient(135deg, var(--color-lilac-light), var(--color-buttercream));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:8px;overflow:hidden;border:1px solid var(--color-mist);">
+              📝
+            </div>
+          </a>
+          <h4 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;">Edit History</h4>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+          <a href="settings-mockup.png" target="_blank">
+            <div style="width:100%;aspect-ratio:2/3;background:linear-gradient(135deg, var(--color-lilac-light), var(--color-buttercream));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:8px;overflow:hidden;border:1px solid var(--color-mist);">
+              ⚙️
+            </div>
+          </a>
+          <h4 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;">Settings</h4>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+          <a href="landing-page-mockup.png" target="_blank">
+            <div style="width:100%;aspect-ratio:2/3;background:linear-gradient(135deg, var(--color-lilac-light), var(--color-buttercream));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:8px;overflow:hidden;border:1px solid var(--color-mist);">
+              🏠
+            </div>
+          </a>
+          <h4 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;">Landing / Welcome</h4>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+          <a href="savid-chat-mockup.png" target="_blank">
+            <div style="width:100%;aspect-ratio:2/3;background:linear-gradient(135deg, var(--color-lilac-light), var(--color-buttercream));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:8px;overflow:hidden;border:1px solid var(--color-mist);">
+              💬
+            </div>
+          </a>
+          <h4 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;">Savid Chat</h4>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+          <a href="signup-mockup.png" target="_blank">
+            <div style="width:100%;aspect-ratio:2/3;background:linear-gradient(135deg, var(--color-lilac-light), var(--color-buttercream));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:8px;overflow:hidden;border:1px solid var(--color-mist);">
+              🚀
+            </div>
+          </a>
+          <h4 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;">Sign Up</h4>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+          <a href="decipher-icon-set.png" target="_blank">
+            <div style="width:100%;aspect-ratio:3/2;background:linear-gradient(135deg, var(--color-lilac-light), var(--color-buttercream));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:8px;overflow:hidden;border:1px solid var(--color-mist);">
+              🎨
+            </div>
+          </a>
+          <h4 style="font-family:var(--font-ui);font-size:0.85rem;font-weight:600;">Icon Set</h4>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ FOOTER ════════ -->
+    <footer class="sg-footer">
+      <p>Decipher Design System v1.0 — Created for team Decipher implementation</p>
+      <p style="margin-top:4px;">See <code style="font-family:var(--font-mono);font-size:0.8rem;">/home/team/shared/design-specs.md</code> for full design specifications</p>
+    </footer>
+
+  </div>
+</body>
+</html>
