@@ -152,13 +152,6 @@ export const subscription = {
     }));
   },
 
-  createPaymentMethod(paymentMethodId: string) {
-    return request<{ success: boolean }>("/subscriptions/payment-method", {
-      method: "POST",
-      body: JSON.stringify({ paymentMethodId }),
-    });
-  },
-
   createCheckout() {
     return request<{ checkoutUrl: string }>("/subscriptions/create", {
       method: "POST",
