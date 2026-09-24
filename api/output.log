@@ -7,3 +7,4 @@ Server is running on port 8000
 [0mGET /api/subscriptions/status [33m401[0m 0.532 ms - 25[0m
 [0mGET /api/subscriptions/status [32m200[0m 111.102 ms - 325[0m
 [0mPOST /api/subscriptions/create [32m200[0m 651.341 ms - 461[0m
+[0mPOST /api/login [33m404[0m 3.339 ms - 149[0m
