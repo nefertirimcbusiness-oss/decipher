@@ -128,6 +128,19 @@ export default function SubscribePage() {
           professional medical or therapeutic advice. Users hold themselves
           responsible for their own actions.
         </p>
+        <p className="text-xs text-stone mt-3 max-w-sm mx-auto">
+          <a href="/terms" className="text-lilac-deep underline">
+            Terms of Service
+          </a>
+          <span className="mx-2">·</span>
+          <a href="/privacy" className="text-lilac-deep underline">
+            Privacy Policy
+          </a>
+          <span className="mx-2">·</span>
+          <a href="/disclaimer" className="text-lilac-deep underline">
+            Health &amp; Safety Disclaimer
+          </a>
+        </p>
       </div>
     </div>
   );
