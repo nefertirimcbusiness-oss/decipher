@@ -62,7 +62,21 @@ export default function SignupPage() {
         </form>
 
         <hr className="auth-divider" />
-        <p className="auth-footer">By signing up, you agree to our Terms of Service and Privacy Policy. This is not a substitute for professional medical advice.</p>
+        <p className="auth-footer">
+          By signing up, you agree to our{" "}
+          <a href="/terms" className="text-lilac-deep underline">
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a href="/privacy" className="text-lilac-deep underline">
+            Privacy Policy
+          </a>
+          . See our{" "}
+          <a href="/disclaimer" className="text-lilac-deep underline">
+            Health &amp; Safety Disclaimer
+          </a>
+          . Decipher is not a substitute for professional medical advice.
+        </p>
       </div>
     </div>
   );
