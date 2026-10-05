@@ -15,7 +15,14 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  if (pathname === "/" || pathname === "/login" || pathname === "/signup") {
+  if (
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/privacy" ||
+    pathname === "/terms" ||
+    pathname === "/disclaimer"
+  ) {
     return null;
   }
 
