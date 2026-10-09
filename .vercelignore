@@ -1,0 +1,8 @@
+# Backend service — runs separately (not part of the Vercel frontend deploy).
+# Excluding it prevents Vercel from building the Express API and its
+# `file:../savid-engine` dependency, which only exists on the backend host.
+api/
+
+# Local environment and logs
+.env*
+*.log
