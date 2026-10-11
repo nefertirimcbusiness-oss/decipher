@@ -95,8 +95,8 @@ export default function PrivacyPage() {
           <li>
             <strong>AI processing</strong> — when you write an entry or chat with
             Savid, relevant text and recent conversation context are sent to
-            Google&apos;s Gemini generative AI model to generate Savid&apos;s
-            responses.
+            Meta&apos;s Llama generative AI model (served via Groq&apos;s API) to
+            generate Savid&apos;s responses.
           </li>
           <li>
             <strong>Billing and subscription management</strong> — handled by
@@ -147,8 +147,8 @@ export default function PrivacyPage() {
             subscription management.
           </li>
           <li>
-            <strong>Google</strong> — the Gemini AI model that powers Savid,
-            which may process the text you share with Savid.
+            <strong>Groq</strong> — serves the Meta Llama AI model that powers
+            Savid, which may process the text you share with Savid.
           </li>
         </ul>
         <p>
@@ -225,7 +225,7 @@ export default function PrivacyPage() {
         <p>
           Decipher operates from servers in the United States, and your
           information may be processed in the U.S. by us, by Stripe (U.S.), and
-          by Google (for the AI model). Where transfers are subject to
+          by Groq (for the AI model). Where transfers are subject to
           data-protection law, they rely on appropriate safeguards.
         </p>
       </Section>
