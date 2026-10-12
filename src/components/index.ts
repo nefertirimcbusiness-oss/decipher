@@ -6,3 +6,5 @@ export { Textarea } from "./Textarea";
 export { Navbar } from "./Navbar";
 export { ScrapbookCard } from "./ScrapbookCard";
 export { SavidBubble, SavidThinking, UserMessageBubble } from "./SavidChat";
+export { SavidArt } from "./SavidArt";
+export { UserAvatar } from "./UserAvatar";

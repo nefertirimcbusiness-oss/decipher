@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Button, Input, Textarea, Modal, SavidBubble, UserMessageBubble } from "@/components";
+import { Button, Input, Textarea, Modal, SavidBubble, UserMessageBubble, SavidArt } from "@/components";
 import { entries, savid, auth, Entry } from "@/lib/api";
 
 export default function EntryDetailPage() {
@@ -120,7 +120,7 @@ export default function EntryDetailPage() {
 
       {/* Savid chat */}
       <div className="mt-8">
-        <h3 className="font-body text-h4 font-semibold text-charcoal mb-4 flex items-center gap-2">🦉 Conversation with Savid</h3>
+        <h3 className="font-body text-h4 font-semibold text-charcoal mb-4 flex items-center gap-2"><SavidArt variant="inline" className="h-6 w-6" /> Conversation with Savid</h3>
         <div className="card">
           <div className="max-h-[400px] overflow-y-auto space-y-4 mb-4">
             {chat.map((msg, i) =>

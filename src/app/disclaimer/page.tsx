@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { SavidArt } from "@/components";
 
 export const metadata: Metadata = {
   title: "Health & Safety Disclaimer — Decipher",
@@ -11,9 +12,7 @@ export default function DisclaimerPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
       <header className="mb-10">
-        <span className="mb-3 inline-block text-4xl" aria-hidden="true">
-          🦉
-        </span>
+        <SavidArt variant="legal" className="mb-3" />
         <h1 className="font-heading text-3xl font-bold text-charcoal mb-2">
           Health &amp; Safety Disclaimer
         </h1>

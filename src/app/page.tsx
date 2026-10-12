@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { SavidArt } from "@/components";
 
 export default function LandingPage() {
   return (
@@ -25,7 +26,9 @@ export default function LandingPage() {
       <main className="flex-1">
         <section className="flex flex-col items-center text-center px-4 pt-20 sm:pt-28 pb-16">
           <div className="max-w-2xl mx-auto">
-            <div className="text-6xl mb-6">🦉</div>
+            <div className="mb-6 flex justify-center">
+              <SavidArt variant="hero" />
+            </div>
             <h1 className="font-heading text-h1 sm:text-[2.75rem] font-bold text-charcoal leading-tight">
               Your Story,{" "}
               <span className="text-lilac-deep">Beautifully</span> Told
@@ -62,7 +65,9 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="card">
-              <div className="text-2xl mb-3">🦉</div>
+              <div className="mb-3 flex justify-center">
+                <SavidArt variant="inline" className="h-8 w-8" />
+              </div>
               <h3 className="font-body text-h4 font-semibold mb-2">Savid Guides You</h3>
               <p className="text-body text-graphite leading-relaxed">
                 A gentle AI owl who asks thoughtful questions and helps jog memories — never judging.

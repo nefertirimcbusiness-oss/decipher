@@ -12,6 +12,7 @@ function setToken(token: string) {
 function clearToken() {
   localStorage.removeItem("decipher_token");
   localStorage.removeItem("decipher_userId");
+  localStorage.removeItem("decipher_email");
 }
 
 async function request<T>(
@@ -62,9 +63,10 @@ export const auth = {
     });
   },
 
-  saveSession(token: string, userId: string) {
+  saveSession(token: string, userId: string, email?: string) {
     setToken(token);
     localStorage.setItem("decipher_userId", userId);
+    if (email) localStorage.setItem("decipher_email", email);
   },
 
   logout() {

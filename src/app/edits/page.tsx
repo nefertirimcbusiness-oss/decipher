@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { entries, auth, Entry } from "@/lib/api";
+import { SavidArt } from "@/components";
 
 interface EditItem {
   entryId: string;
@@ -42,7 +43,9 @@ export default function EditsPage() {
       <p className="text-body text-graphite mb-6">Every edit is a step in your story. Each version matters.</p>
 
       <div className="savid-container mb-6">
-        <div className="savid-avatar">🦉</div>
+        <div className="savid-avatar overflow-hidden">
+          <SavidArt variant="avatar" alt="" />
+        </div>
         <div className="savid-bubble">
           <p className="savid-name">Savid</p>
           <p className="savid-text">&ldquo;Every edit is a step in your story. Each version matters.&rdquo;</p>
