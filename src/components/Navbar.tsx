@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserAvatar } from "./UserAvatar";
 
 /* Desktop navigation — hidden on mobile, shown on tablet+ via nav-bottom */
 export function Navbar() {
@@ -65,7 +66,7 @@ export function Navbar() {
             href="/settings"
             className="w-9 h-9 rounded-full bg-lilac-light flex items-center justify-center text-lilac-deep text-sm font-bold no-underline hover:no-underline"
           >
-            Y
+            <UserAvatar className="h-full w-full rounded-full" />
           </Link>
         </div>
       </nav>

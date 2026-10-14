@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { SavidArt } from "./SavidArt";
 
 interface ScrapbookCardProps {
   title: string;
@@ -62,7 +63,7 @@ export function ScrapbookCard({
             <span className="memory-thumbnail-badge">📎</span>
           )}
           {hasSavidResponse && (
-            <span className="memory-thumbnail-badge">🦉</span>
+            <span className="memory-thumbnail-badge"><SavidArt variant="badge" alt="" /></span>
           )}
         </div>
       </div>

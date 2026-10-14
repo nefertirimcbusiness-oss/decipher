@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Input } from "@/components";
+import { Button, Input, SavidArt } from "@/components";
 import { auth } from "@/lib/api";
 
 export default function SignupPage() {
@@ -19,7 +19,7 @@ export default function SignupPage() {
     setError("");
     try {
       const res = await auth.signup(email, password, name);
-      auth.saveSession(res.token, res.userId);
+      auth.saveSession(res.token, res.userId, email);
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed");
@@ -32,7 +32,9 @@ export default function SignupPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="savid-icon">🦉</div>
+          <div className="savid-icon">
+            <SavidArt variant="logo" className="mx-auto" />
+          </div>
           <h1 className="auth-title">Welcome to Decipher</h1>
           <p className="auth-subtitle">A gentle space for your memories.</p>
         </div>
@@ -48,14 +50,8 @@ export default function SignupPage() {
           <Input label="Email" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
           <Input label="Password" type="password" placeholder="Create a password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           <Input label="Display Name" type="text" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} required />
-          <div className="input-group">
-            <label className="input-label">Card Number</label>
-            <input className="input-field" type="text" placeholder="1234 5678 9012 3456" disabled />
-          </div>
-          <div className="flex gap-3">
-            <div className="input-group flex-1"><label className="input-label">MM/YY</label><input className="input-field" type="text" placeholder="MM/YY" disabled /></div>
-            <div className="input-group flex-1"><label className="input-label">CVC</label><input className="input-field" type="text" placeholder="CVC" disabled /></div>
-            <div className="input-group flex-1"><label className="input-label">ZIP</label><input className="input-field" type="text" placeholder="ZIP" disabled /></div>
+          <div className="bg-buttercream rounded-lg p-3 text-body-small text-graphite text-center">
+            ✨ No card needed — your 7-day free trial starts right away.
           </div>
           {error && <p className="error-message">{error}</p>}
           <Button type="submit" size="lg" isLoading={isLoading} className="w-full mt-2">✨ Start Your Journey</Button>

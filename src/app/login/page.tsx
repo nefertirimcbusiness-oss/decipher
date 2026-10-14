@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, Input } from "@/components";
+import { Button, Input, SavidArt } from "@/components";
 import { auth } from "@/lib/api";
 
 export default function LoginPage() {
@@ -19,7 +19,7 @@ export default function LoginPage() {
     setError("");
     try {
       const res = await auth.login(email, password);
-      auth.saveSession(res.token, res.userId);
+      auth.saveSession(res.token, res.userId, email);
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
@@ -32,7 +32,9 @@ export default function LoginPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="savid-icon">🦉</div>
+          <div className="savid-icon">
+            <SavidArt variant="logo" className="mx-auto" />
+          </div>
           <h1 className="auth-title">Welcome back</h1>
           <p className="auth-subtitle">Log in to continue your story</p>
         </div>
@@ -55,11 +57,6 @@ export default function LoginPage() {
             required
           />
           {error && <p className="error-message">{error}</p>}
-          <div className="flex justify-end">
-            <Link href="/forgot-password" className="text-caption text-lilac-deep font-medium">
-              Forgot password?
-            </Link>
-          </div>
           <Button type="submit" size="lg" isLoading={isLoading} className="w-full mt-2">
             Log in
           </Button>

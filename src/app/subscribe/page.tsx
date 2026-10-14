@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button, Card } from "@/components";
+import { Button, Card, SavidArt } from "@/components";
 import { subscription, auth } from "@/lib/api";
 
 export default function SubscribePage() {
@@ -26,7 +26,9 @@ export default function SubscribePage() {
       <div className="max-w-lg w-full text-center">
         {/* Header */}
         <div className="mb-8">
-          <span className="inline-block text-5xl mb-4">🦉</span>
+          <span className="mb-4 flex justify-center">
+            <SavidArt variant="header" />
+          </span>
           <h1 className="font-heading text-h2 font-bold text-charcoal mb-2">
             Start Your Journey
           </h1>

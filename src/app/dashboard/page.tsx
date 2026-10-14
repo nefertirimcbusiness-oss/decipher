@@ -65,7 +65,7 @@ export default function DashboardPage() {
             <div className="empty-state my-8">
               <div className="empty-state-icon">📖</div>
               <p className="empty-state-text">Your scrapbook is empty... (for now)</p>
-              <p className="empty-state-subtext">🦉 Every story starts with a single page. Whenever you're ready, I'm here.</p>
+              <p className="empty-state-subtext">Every story starts with a single page. Whenever you&apos;re ready, I&apos;m here.</p>
               <Link href="/entries/new"><button className="btn btn-primary">✨ Write Your First Memory</button></Link>
             </div>
           )}

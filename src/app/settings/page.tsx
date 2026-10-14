@@ -150,13 +150,12 @@ export default function SettingsPage() {
           <h2 className="font-body text-h4 font-semibold text-charcoal mb-4">🎨 Preferences</h2>
           <div className="flex flex-col gap-3">
             {[
-              { label: "🌙 Dark mode (coming soon)", checked: false, disabled: true },
               { label: "🔔 Reminders", checked: true },
               { label: "🔊 Sound effects: Gentle", checked: true },
             ].map((pref) => (
               <label key={pref.label} className="flex items-center justify-between cursor-pointer">
                 <span className="text-body text-graphite">{pref.label}</span>
-                <input type="checkbox" defaultChecked={pref.checked} disabled={pref.disabled} className="w-4 h-4 rounded border-mist text-lilac-deep focus:ring-lilac" />
+                <input type="checkbox" defaultChecked={pref.checked} className="w-4 h-4 rounded border-mist text-lilac-deep focus:ring-lilac" />
               </label>
             ))}
           </div>
@@ -172,7 +171,7 @@ export default function SettingsPage() {
         </Card>
 
         <Card>
-          <h2 className="font-body text-h4 font-semibold text-charcoal mb-4">🦉 About</h2>
+          <h2 className="font-body text-h4 font-semibold text-charcoal mb-4">About</h2>
           <div className="space-y-2 text-body text-graphite">
             <p>Decipher v1.0.0</p>
             <a href="#" className="text-lilac-deep hover:text-lilac text-body-small">📋 Terms of Service</a><br />

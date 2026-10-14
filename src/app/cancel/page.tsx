@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Button, Card } from "@/components";
+import { Button, Card, SavidArt } from "@/components";
 
 export default function CancelPage() {
   return (
@@ -10,7 +10,9 @@ export default function CancelPage() {
       <div className="max-w-lg w-full text-center">
         {/* Header */}
         <div className="mb-8">
-          <span className="inline-block text-5xl mb-4">🦉</span>
+          <span className="mb-4 flex justify-center">
+            <SavidArt variant="header" />
+          </span>
           <h1 className="font-heading text-h2 font-bold text-charcoal mb-2">
             No rush at all
           </h1>

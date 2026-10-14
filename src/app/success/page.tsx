@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Button, Card } from "@/components";
+import { Button, Card, SavidArt } from "@/components";
 import { subscription, auth, type SubscriptionStatus } from "@/lib/api";
 
 function statusLabel(status: string) {
@@ -56,7 +56,9 @@ function SuccessContent() {
       <div className="max-w-lg w-full text-center">
         {/* Header */}
         <div className="mb-8">
-          <span className="inline-block text-5xl mb-4">🦉</span>
+          <span className="mb-4 flex justify-center">
+            <SavidArt variant="header" />
+          </span>
           <h1 className="font-heading text-h2 font-bold text-charcoal mb-2">
             Welcome to Decipher
           </h1>
@@ -145,7 +147,9 @@ function SuccessSkeleton() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-8">
       <div className="max-w-lg w-full text-center">
-        <span className="inline-block text-5xl mb-4">🦉</span>
+        <span className="mb-4 flex justify-center">
+          <SavidArt variant="header" />
+        </span>
         <h1 className="font-heading text-h2 font-bold text-charcoal mb-2">
           Welcome to Decipher
         </h1>
