@@ -35,6 +35,21 @@ app.use('/api/entries', entryRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/savid', savidRoutes);
 
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+// Stripe moved `current_period_end` off the subscription object and onto each
+// subscription item in API version 2025-03-31 (the installed SDK defaults to
+// 2026-07-29.dahlia). Reading only the top-level field yields `undefined`, which
+// silently writes NULL to subscriptions.current_period_end. Prefer the item value,
+// fall back to the legacy top-level field, and give up with NULL if neither exists.
+function subscriptionPeriodEnd(subscription) {
+  return subscription?.items?.data?.[0]?.current_period_end
+    ?? subscription?.current_period_end
+    ?? null;
+}
+
 app.post('/api/webhooks/stripe', async (req, res) => {
   const sig = req.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -79,7 +94,7 @@ app.post('/api/webhooks/stripe', async (req, res) => {
           `, [
             subId, userId, subscriptionId, subscription.status,
             subscription.items.data[0].price.id,
-            subscription.current_period_end,
+            subscriptionPeriodEnd(subscription),
             subscription.trial_end
           ]);
 
@@ -95,7 +110,7 @@ app.post('/api/webhooks/stripe', async (req, res) => {
         query(`
           UPDATE subscriptions SET status = ?, current_period_end = datetime(?, 'unixepoch'), trial_end = datetime(?, 'unixepoch')
           WHERE stripe_subscription_id = ?
-        `, [subscription.status, subscription.current_period_end, subscription.trial_end, subscriptionId]);
+        `, [subscription.status, subscriptionPeriodEnd(subscription), subscription.trial_end, subscriptionId]);
 
         const subs = query('SELECT user_id FROM subscriptions WHERE stripe_subscription_id = ?', [subscriptionId]);
         if (subs.length > 0) {
