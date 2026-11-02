@@ -7,8 +7,11 @@
 #   ./supervise.sh status            is it up? who is listening? last log lines
 #   ./supervise.sh watchdog          foreground loop: restart the API whenever it dies
 #   ./supervise.sh ensure-watchdog   start the watchdog in the background if it is not running
-#   ./supervise.sh install-autostart install a login-shell hook so the watchdog comes back
-#                                    after a machine replacement (needs root; /etc/profile.d)
+#   ./supervise.sh install-autostart DEPRECATED: writes to /etc/profile.d, which the
+#                                    platform wipes on every machine replacement, so it
+#                                    does NOT survive. The durable hook is
+#                                    api/ops/install-boot-hook.sh (hangs the API start off
+#                                    the team site server, which the platform does reboot).
 #
 # Nothing here duplicates a running server: every start path first checks whether
 # something is already listening on the port.
@@ -132,6 +135,8 @@ do_ensure_watchdog() {
 }
 
 do_install_autostart() {
+  echo "WARNING: /etc does not survive a machine replacement — this hook WILL be lost." >&2
+  echo "         Use api/ops/install-boot-hook.sh instead." >&2
   cat > "$AUTOSTART_FILE" <<EOF
 # Decipher API autostart — installed by $DIR/supervise.sh install-autostart
 # Every login shell (owner terminal, agent session) makes sure the supervisor is
