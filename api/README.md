@@ -48,3 +48,11 @@ Backend API for the Decipher app.
 *   `POST /api/subscriptions/create-checkout-session`: Start Stripe subscription
 *   `GET /api/subscriptions/status`: Get current user subscription status
 *   `POST /api/webhooks/stripe`: Stripe webhook handler
+
+## Durability after a machine replacement
+
+The API is started automatically after a machine replacement — no human or agent
+action. The autostart hook hangs off the team site server (the one process the
+platform reboots from `/home` on every boot), not `/etc`, which is wiped.
+See [`ops/README.md`](ops/README.md) for the mechanism, the proof, and the
+`verify-durability.sh` script.
