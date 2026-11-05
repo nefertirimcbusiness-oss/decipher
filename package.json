@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "deploy": "bash scripts/deploy.sh",
+    "verify:prod": "bash scripts/deploy.sh --verify-only"
   },
   "dependencies": {
     "next": "16.2.9",
