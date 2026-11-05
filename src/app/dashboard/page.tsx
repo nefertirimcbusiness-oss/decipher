@@ -3,21 +3,23 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ScrapbookCard, SavidBubble } from "@/components";
-import { entries, auth, Entry } from "@/lib/api";
+import { entries, Entry } from "@/lib/api";
+import { useSessionGuard } from "@/lib/useSession";
 
 export default function DashboardPage() {
+  const { ready } = useSessionGuard();
   const [entryList, setEntryList] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
 
   useEffect(() => {
-    if (!auth.isAuthenticated()) return;
+    if (!ready) return;
     setUsername(localStorage.getItem("decipher_userId")?.slice(0, 4) || "");
     entries.list().then((data) => {
       setEntryList(data);
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, []);
+  }, [ready]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 sm:py-10">
@@ -27,7 +29,7 @@ export default function DashboardPage() {
 
       <div className="mb-8">
         <SavidBubble
-          message={`You've written ${entryList.length} memories. That's wonderful. How about we revisit one from a rainy day?`}
+          message={loading ? "One moment — I'm opening your scrapbook." : `You've written ${entryList.length} memories. That's wonderful. How about we revisit one from a rainy day?`}
           timestamp="Just now"
         />
       </div>

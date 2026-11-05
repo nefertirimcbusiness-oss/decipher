@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button, Input, Card } from "@/components";
 import { auth, subscription } from "@/lib/api";
+import { useSessionGuard } from "@/lib/useSession";
 
 export default function SettingsPage() {
   const [name, setName] = useState("");
@@ -11,14 +12,15 @@ export default function SettingsPage() {
   const [subLoading, setSubLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [cancelConfirm, setCancelConfirm] = useState(false);
+  const { ready } = useSessionGuard();
 
   useEffect(() => {
-    if (!auth.isAuthenticated()) return;
+    if (!ready) return;
     subscription.getStatus()
       .then(setSubStatus)
       .catch(() => {})
       .finally(() => setSubLoading(false));
-  }, []);
+  }, [ready]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();

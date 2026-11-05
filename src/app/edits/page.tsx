@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { entries, auth, Entry } from "@/lib/api";
+import { entries, Entry } from "@/lib/api";
+import { useSessionGuard } from "@/lib/useSession";
 import { SavidArt } from "@/components";
 
 interface EditItem {
@@ -17,9 +18,10 @@ export default function EditsPage() {
   const [edits, setEdits] = useState<EditItem[]>([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const { ready } = useSessionGuard();
 
   useEffect(() => {
-    if (!auth.isAuthenticated()) return;
+    if (!ready) return;
     entries.list().then((data) => {
       const allEdits: EditItem[] = [];
       data.forEach((entry: Entry) => {
@@ -32,7 +34,7 @@ export default function EditsPage() {
       setEdits(allEdits);
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, []);
+  }, [ready]);
 
   const titles = [...new Set(edits.map((e) => e.entryTitle))];
   const filtered = filter === "all" ? edits : edits.filter((e) => e.entryTitle === filter);
