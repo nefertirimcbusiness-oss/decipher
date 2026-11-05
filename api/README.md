@@ -111,13 +111,80 @@ they are missing, so the `team-db` CLI the database layer shells out to keeps wo
 *   `POST /api/entries`: Create a new entry (supports multi-part/form-data for evidence)
 *   `GET /api/entries/:id`: Get a specific entry with evidence and history
 *   `PUT /api/entries/:id`: Update an entry (requires `reason`)
-*   `DELETE /api/entries/:id`: Delete an entry
+*   `DELETE /api/entries/:id`: Delete an entry **and its evidence files on disk**
 *   `POST /api/savid/chat`: Chat with Savid about a specific entry
 *   `GET /api/savid/:entryId`: Get chat history for an entry
 *   `POST /api/subscriptions/create`: Start Stripe subscription
 *   `GET /api/subscriptions/status`: Get current user subscription status
 *   `POST /api/subscriptions/cancel`: Cancel the subscription immediately
+*   `DELETE /api/account`: **Delete the calling user's account permanently** (see below)
 *   `POST /api/webhooks/stripe`: Stripe webhook handler
+
+## Deletion (what the privacy policy promises)
+
+The privacy policy says a deleted account loses its entries, audio and evidence files,
+Savid conversations and edit history. That is what the code now does.
+
+### Deleting one entry — `DELETE /api/entries/:id`
+
+1. Look up the entry, scoped to the caller's own user id (someone else's entry is a 404).
+2. `unlink` every file in `evidence_files` for that entry **before** deleting the rows —
+   once the rows are gone there is no record of which files to remove. A file that is
+   already missing is not an error; any other unlink failure returns 500 and the entry is
+   left in place rather than being reported as deleted while its file survives.
+3. Delete the `evidence_files`, `edits`, `savid_conversations` and `entries` rows.
+
+### Deleting an account — `DELETE /api/account`
+
+Authenticated with the caller's bearer token; there is no user id in the URL or body, so it
+can only ever act on the caller's own account. Deletion is **immediate** — nothing is queued
+and no scheduled job is involved. Order matters and is deliberate:
+
+1. **Stripe first.** Each `subscriptions.stripe_subscription_id` is retrieved and cancelled
+   (`subscriptions.cancel`), so a deleted user is never billed again. A subscription that is
+   already `canceled`/`incomplete_expired`, missing from Stripe (`resource_missing`), or has
+   no id is skipped as benign. Any *other* Stripe error returns **502 and deletes nothing** —
+   the account stays intact so the user can retry.
+2. **Files second.** Every evidence file belonging to the user's entries is unlinked. If one
+   cannot be removed the endpoint returns 500 with the offending paths and deletes no rows,
+   rather than reporting success with data left on disk. Unlinking is idempotent, so a retry
+   is safe.
+3. **Rows last**, children before parents: `savid_conversations` → `edits` → `evidence_files`
+   → `entries` → `subscriptions` → `users`. The `users` row goes last so a failure partway
+   leaves an account that can still authenticate and retry; the response then reports the
+   stage that failed instead of claiming success.
+
+`team-db` executes one statement per call (no transactions), so a partial failure cannot be
+rolled back — it is reported honestly with the failing stage instead.
+
+Because JWTs are stateless and valid for 7 days, `middleware/auth.js` also rejects *mutating*
+requests whose user row no longer exists (401 `Account no longer exists`), so a token left in
+a browser after deletion cannot create new rows for a deleted user.
+
+### Deletion by hand (the privacy policy's "email us" path)
+
+```bash
+node ops/delete-account.js --email user@example.com          # dry run: shows what would go
+node ops/delete-account.js --email user@example.com --confirm # actually deletes
+```
+
+### Proving it
+
+```bash
+node test/stripe-cancel-branches.mjs   # every Stripe branch, with fake clients (no network)
+
+# end-to-end against a running instance, real disk + real database + real Stripe TEST mode:
+BASE_URL=http://127.0.0.1:8000 \
+UPLOADS_DIR=/path/to/api/uploads \
+STRIPE_TEST_KEY=sk_test_... \
+node test/verify-deletion.mjs
+```
+
+Both scripts create their own throwaway users and remove them (and their Stripe test-mode
+objects) at the end, and fail loudly if the row counts do not return to the baseline.
+`UPLOADS_DIR` also overrides where uploads are written and resolved, which is how a test
+instance can be kept off the live uploads directory.
+
 
 ## Durability after a machine replacement
 

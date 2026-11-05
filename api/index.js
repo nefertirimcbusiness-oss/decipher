@@ -12,6 +12,7 @@ import authRoutes from './routes/auth.js';
 import entryRoutes from './routes/entries.js';
 import subscriptionRoutes from './routes/subscriptions.js';
 import savidRoutes from './routes/savid.js';
+import accountRoutes from './routes/account.js';
 import { initializeDatabase } from './init-db.js';
 
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/entries', entryRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/savid', savidRoutes);
+app.use('/api/account', accountRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
