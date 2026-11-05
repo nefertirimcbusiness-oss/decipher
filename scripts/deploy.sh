@@ -63,10 +63,17 @@ verify_live() {
   bold "== Verifying $PROD_URL =="
 
   # 1. What commit is production actually serving?
-  local dep sha
-  dep="$(latest_prod_deployment)"
-  sha="$(printf '%s' "$dep" | python3 -c \
-    'import sys,json;d=json.load(sys.stdin);print((d.get("deployments") or [{}])[0].get("meta",{}).get("githubCommitSha",""))' 2>/dev/null)"
+  #    The deployments list can lag a fresh deploy by a few seconds, so poll.
+  local dep sha attempt
+  for attempt in $(seq 1 12); do
+    dep="$(latest_prod_deployment)"
+    sha="$(printf '%s' "$dep" | python3 -c \
+      'import sys,json;d=json.load(sys.stdin);print((d.get("deployments") or [{}])[0].get("meta",{}).get("githubCommitSha",""))' 2>/dev/null)"
+    if [ -n "$sha" ] && { [ -z "$expected_sha" ] || [ "$sha" = "$expected_sha" ]; }; then
+      break
+    fi
+    sleep 5
+  done
   if [ -n "$sha" ]; then
     echo "production deployment commit: $sha"
     if [ -n "$expected_sha" ] && [ "$sha" != "$expected_sha" ]; then
@@ -196,7 +203,16 @@ if [ -z "$VCLI" ]; then
 fi
 
 bold "== Deploying to production =="
-( cd "$WORKTREE" && "$VCLI" deploy --prod --yes --token "$VERCEL_TOKEN" 2>&1 ) | tee /tmp/decipher-deploy.log
+# The commit metadata is set explicitly: we deploy from a worktree, and the CLI
+# only auto-detects git metadata from a normal checkout. Without this the
+# deployment would carry no record of which commit it came from, and the
+# verification below could not tell a fresh build from a stale one.
+( cd "$WORKTREE" && "$VCLI" deploy --prod --yes --token "$VERCEL_TOKEN" \
+    --meta "githubCommitSha=$SHA" \
+    --meta "githubCommitRef=main" \
+    --meta "githubCommitOrg=nefertirimcbusiness-oss" \
+    --meta "githubCommitRepo=decipher" \
+    --meta "githubCommitMessage=$SUBJECT" 2>&1 ) | tee /tmp/decipher-deploy.log
 DEPLOY_RC="${PIPESTATUS[0]}"
 [ "$DEPLOY_RC" -eq 0 ] || die "vercel deploy failed (exit $DEPLOY_RC) — see /tmp/decipher-deploy.log"
 
