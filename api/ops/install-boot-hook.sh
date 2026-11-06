@@ -22,6 +22,11 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cp "$HERE/api-autostart.ts" "$SITE_DIR/api-autostart.ts"
 echo "installed $SITE_DIR/api-autostart.ts"
 
+# The API ingress (/stripe/webhook, /svc/*) lives in the site dir too, and the
+# site dir is not a git repo — this repo is its only record. Copy it in.
+cp "$HERE/site-stripe-ingress.ts" "$SITE_DIR/stripe-ingress.ts"
+echo "installed $SITE_DIR/stripe-ingress.ts"
+
 node - "$SITE_DIR" <<'NODE'
 const fs = require("fs");
 const path = require("path");
@@ -68,6 +73,39 @@ patch("serve.ts", "ensureBackend", (src) => {
     src += '\n// Durable API autostart — see api-autostart.ts.\nvoid ensureBackend("serve-prod");\n';
   }
   return src;
+});
+
+// serve.ts — the public API ingress (/stripe/webhook, /svc/*). Deliberately
+// redundant with the /api proxy, and deliberately not dependent on BACKEND_URL:
+// it is the path the Stripe dashboard endpoint is pointed at, so it must not be
+// able to break because an env var in site/.env is wrong.
+patch("serve.ts", "await handleApiIngress", (src) => {
+  if (!/from "\.\/stripe-ingress"/.test(src)) {
+    src = src.replace(
+      /^(import handler from "\.\/dist\/server\/server\.js";)$/m,
+      '$1\nimport { handleApiIngress } from "./stripe-ingress";'
+    );
+  }
+  src = src.replace(
+    /(async fetch\(req\)[^{]*\{)/,
+    '$1\n        const ingress = await handleApiIngress(req);\n        if (ingress) return ingress;'
+  );
+  return src;
+});
+
+// vite.config.ts — the dev server (what the platform boots) must proxy the API
+// routes to the Node API on loopback. Present in the template config today; this
+// restores it if a site template reset ever drops it.
+patch("vite.config.ts", "'/stripe/webhook'", (src) => {
+  const entries = [
+    "      '/api': { target: 'http://127.0.0.1:8000', changeOrigin: true },",
+    "      '/stripe/webhook': { target: 'http://127.0.0.1:8000', rewrite: () => '/api/webhooks/stripe', changeOrigin: true },",
+    "      '/svc': { target: 'http://127.0.0.1:8000', rewrite: (p) => p.replace(/^\\/svc/, '/api'), changeOrigin: true },",
+  ].join("\n");
+  if (/\bproxy:\s*\{/.test(src)) {
+    return src.replace(/\bproxy:\s*\{/, (m) => `${m}\n${entries}`);
+  }
+  return src.replace(/\bserver:\s*\{/, (m) => `${m}\n    proxy: {\n${entries}\n    },`);
 });
 NODE
 
