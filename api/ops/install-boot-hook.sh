@@ -78,6 +78,19 @@ patch("serve.ts", "ensureBackend", (src) => {
   return src;
 });
 
+// vite.config.ts — the platform may boot the site in dev mode instead of
+// serve.ts, so the same two public paths are proxied there too. Vite streams the
+// body byte-for-byte, which keeps the Stripe signature valid.
+patch("vite.config.ts", "'/stripe/webhook': { target:", (src) => {
+  const entries = [
+    "      // The platform edge 404s every /api/* path before it reaches this server,",
+    "      // so the Stripe webhook needs a public path that is not under /api.",
+    "      '/stripe/webhook': { target: 'http://127.0.0.1:8000', rewrite: () => '/api/webhooks/stripe', changeOrigin: true },",
+    "      '/svc': { target: 'http://127.0.0.1:8000', rewrite: (p) => p.replace(/^\/svc/, '/api'), changeOrigin: true },",
+  ].join("\n");
+  return src.replace("proxy: {", "proxy: {\n" + entries);
+});
+
 // serve.ts — route the public webhook path (and /svc/*) to the API before static
 // files and SSR. Idempotent via the handleApiIngress marker.
 patch("serve.ts", "handleApiIngress", (src) => {
