@@ -20,7 +20,7 @@
 // failing API start can never delay or crash the site server.
 
 import { spawn } from "node:child_process";
-import { appendFileSync, mkdirSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
 const API_DIR = process.env.DECIPHER_API_DIR || "/home/team/shared/decipher-api";
@@ -91,6 +91,16 @@ export async function ensureBackend(source = "site"): Promise<boolean> {
     }
 
     log(source, "API not answering on :8000 — starting supervisor");
+
+    // The publish/build sandbox is NOT the team box: it has no /bin/bash and no
+    // API directory. Spawning there fails, and an unhandled 'error' event on a
+    // ChildProcess crashes the whole site server (which is what broke
+    // publish_site). Guard before spawning and always attach an error handler.
+    if (!existsSync("/bin/bash") || !existsSync(SUPERVISE)) {
+      log(source, `autostart skipped: missing /bin/bash or ${SUPERVISE} (not the team box)`);
+      return false;
+    }
+
     // `start` is idempotent and waits for health; `ensure-watchdog` starts the
     // 15s watchdog loop that restarts the API if it dies while the box is up.
     const child = spawn("/bin/bash", ["-lc", `"${SUPERVISE}" start; "${SUPERVISE}" ensure-watchdog`], {
@@ -98,6 +108,9 @@ export async function ensureBackend(source = "site"): Promise<boolean> {
       detached: true,
       stdio: "ignore",
       env: supervisorEnv(),
+    });
+    child.on("error", (err) => {
+      log(source, `supervisor spawn failed: ${err?.message ?? String(err)}`);
     });
     child.unref();
 

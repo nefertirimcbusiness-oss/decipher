@@ -22,6 +22,14 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cp "$HERE/api-autostart.ts" "$SITE_DIR/api-autostart.ts"
 echo "installed $SITE_DIR/api-autostart.ts"
 
+# Public webhook ingress. The platform edge 404s every /api/* path before it
+# reaches the site server, so Stripe cannot POST to /api/webhooks/stripe from the
+# internet. stripe-ingress.ts serves the webhook on /stripe/webhook instead and
+# proxies the raw bytes to 127.0.0.1:8000. Installed here because a site template
+# reset would otherwise silently drop the route and webhooks would fail again.
+cp "$HERE/site-stripe-ingress.ts" "$SITE_DIR/stripe-ingress.ts"
+echo "installed $SITE_DIR/stripe-ingress.ts"
+
 node - "$SITE_DIR" <<'NODE'
 const fs = require("fs");
 const path = require("path");
@@ -66,6 +74,31 @@ patch("serve.ts", "ensureBackend", (src) => {
   }
   if (!/void ensureBackend\(/.test(src)) {
     src += '\n// Durable API autostart — see api-autostart.ts.\nvoid ensureBackend("serve-prod");\n';
+  }
+  return src;
+});
+
+// serve.ts — route the public webhook path (and /svc/*) to the API before static
+// files and SSR. Idempotent via the handleApiIngress marker.
+patch("serve.ts", "handleApiIngress", (src) => {
+  if (!/from "\.\/stripe-ingress"/.test(src)) {
+    if (/^import \{ ensureBackend \} from "\.\/api-autostart";$/m.test(src)) {
+      src = src.replace(
+        /^(import \{ ensureBackend \} from "\.\/api-autostart";)$/m,
+        '$1\nimport { handleApiIngress } from "./stripe-ingress";'
+      );
+    } else {
+      src = src.replace(
+        /^(import handler from "\.\/dist\/server\/server\.js";)$/m,
+        '$1\nimport { handleApiIngress } from "./stripe-ingress";'
+      );
+    }
+  }
+  if (!/handleApiIngress\(req\)/.test(src)) {
+    src = src.replace(
+      /(async fetch\(req\) \{\n)/,
+      '$1        // The edge blocks /api/* before it reaches us; see stripe-ingress.ts.\n        const ingress = await handleApiIngress(req);\n        if (ingress) return ingress;\n\n'
+    );
   }
   return src;
 });
