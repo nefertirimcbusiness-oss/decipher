@@ -17,7 +17,7 @@ set -uo pipefail
 PROJECT_ID="prj_ju65TMkqGNHGQuRt3iKvYPPN421X"
 ORG_ID="team_xZANYaO9IGtpSMuOUiDCGiOJ"
 PROD_URL="https://decipher-repo.vercel.app"
-API_HEALTH_DEFAULT="https://eb044699c4cc4dada8cc7727a5002ea2-dev.ctonew.app/api/health"
+API_HEALTH_DEFAULT="https://eb044699c4cc4dada8cc7727a5002ea2-dev.cto.site/api/health"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -49,9 +49,18 @@ latest_prod_deployment() {
   api_get "/v6/deployments?projectId=$PROJECT_ID&teamId=$ORG_ID&target=production&limit=1"
 }
 
-# Pull the API base URL that the app is compiled to call, from source.
+# The fallback API base compiled into the app when NEXT_PUBLIC_API_URL is unset.
+# This is deliberately only the quoted literal: a hostname mentioned in a comment
+# is not the value the app will use.
 source_api_base() {
-  grep -o 'https://[a-zA-Z0-9._-]*/api' "$REPO_ROOT/src/lib/api.ts" | head -1
+  grep -oE '"https://[A-Za-z0-9._-]+/api"' "$REPO_ROOT/src/lib/api.ts" \
+    | head -1 | tr -d '"'
+}
+
+# Does a base URL actually answer? 200 from /health is the only definition of
+# "reachable" this script accepts.
+api_health_code() { # api_health_code <base>
+  curl -s -m 30 -o /dev/null -w '%{http_code}' "${1%/}/health"
 }
 
 # --- verification (runs against the live URL, never against CLI output) -----
@@ -120,19 +129,39 @@ verify_live() {
     if [ -z "$api_base" ]; then
       red "  ✗ no API base URL found in the served JS bundle"
       failures=$((failures+1))
-    elif [ -n "$want_chunk_base" ] && [ "$api_base" != "$want_chunk_base" ]; then
-      red "  ✗ served JS calls $api_base but src/lib/api.ts says $want_chunk_base (stale build)"
-      failures=$((failures+1))
     else
-      green "  ✓ served JS calls $api_base (matches source)"
+      # What matters is that the URL the browser will call actually answers.
+      # The served bundle is built with NEXT_PUBLIC_API_URL set, so it may
+      # legitimately differ from the source fallback — comparing the two strings
+      # only ever proved that the env var was set, and it failed a perfectly good
+      # deploy whenever the two were in sync-by-intent rather than by spelling.
+      code="$(api_health_code "$api_base")"
+      if [ "$code" = "200" ]; then
+        green "  ✓ served JS calls $api_base -> /health 200"
+      else
+        red "  ✗ served JS calls $api_base but /health -> $code (every call would fail)"
+        failures=$((failures+1))
+      fi
+      if [ -n "$want_chunk_base" ] && [ "$api_base" != "$want_chunk_base" ]; then
+        echo "    note: served build was compiled with NEXT_PUBLIC_API_URL=$api_base;"
+        echo "          src/lib/api.ts fallback is $want_chunk_base (used only when the var is unset)"
+      fi
     fi
-    local health="${api_base%/}/health"
-    code="$(curl -s -m 30 -o /dev/null -w '%{http_code}' "$health")"
-    if [ "$code" = "200" ]; then
-      green "  ✓ backend $health -> 200"
-    else
-      red "  ✗ backend $health -> $code (app would load but every call would fail)"
+
+    # The source fallback is the app's safety net: if the env var is ever lost or
+    # a new environment is built without it, this is the URL every user gets.
+    # So it must itself be a live backend — not a string that merely looks right.
+    if [ -z "$want_chunk_base" ]; then
+      red "  ✗ src/lib/api.ts has no literal API base fallback"
       failures=$((failures+1))
+    else
+      code="$(api_health_code "$want_chunk_base")"
+      if [ "$code" = "200" ]; then
+        green "  ✓ source fallback $want_chunk_base -> /health 200 (safe if the env var is lost)"
+      else
+        red "  ✗ source fallback $want_chunk_base -> /health $code (dead host: a build without the env var would break)"
+        failures=$((failures+1))
+      fi
     fi
     # CORS: the browser origin must be allowed by the backend.
     code="$(curl -s -m 30 -o /dev/null -w '%{http_code}' -X OPTIONS "${api_base%/}/auth/login" \

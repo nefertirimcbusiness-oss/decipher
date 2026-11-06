@@ -1,5 +1,13 @@
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://eb044699c4cc4dada8cc7727a5002ea2-dev.ctonew.app/api";
+// Public base URL of the Decipher API. `NEXT_PUBLIC_API_URL` is inlined at build
+// time (it is a Vercel project env var); the fallback below is what a build uses
+// when that var is missing, so it must always name the backend that is actually
+// serving requests. A retired hostname here is not a build error — it silently
+// breaks every call at runtime, which is exactly how the app was down for weeks
+// on a dead `...-dev.ctonew.app` host. `scripts/deploy.sh` now proves this
+// fallback answers `/health` before a deploy is allowed to pass.
+const API_BASE = (
+  process.env.NEXT_PUBLIC_API_URL || "https://eb044699c4cc4dada8cc7727a5002ea2-dev.cto.site/api"
+).replace(/\/+$/, "");
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;

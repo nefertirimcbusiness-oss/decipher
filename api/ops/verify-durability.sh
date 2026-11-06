@@ -13,7 +13,7 @@ set -uo pipefail
 
 API_DIR="${API_DIR:-/home/team/shared/decipher-api}"
 SITE_DIR="${SITE_DIR:-/home/team/shared/site}"
-PUBLIC="${1:-https://eb044699c4cc4dada8cc7727a5002ea2-dev.ctonew.app}"
+PUBLIC="${1:-https://eb044699c4cc4dada8cc7727a5002ea2-dev.cto.site}"
 
 code() { curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$@"; }
 say() { printf '%s\n' "$*"; }

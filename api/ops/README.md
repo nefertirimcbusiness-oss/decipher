@@ -48,6 +48,29 @@ strips every key the API reads from its own `.env` before spawning, so the API
 sees exactly the environment it had when started by hand (platform
 `/etc/profile.d` vars + `decipher-api/.env`).
 
+## The public API path (what comes back after a replacement)
+
+The product app calls `https://<label>.<PUBLIC_SITE_DOMAIN>/api`, which the
+platform edge forwards to the site server on `:3000`, which proxies it to the API
+on `127.0.0.1:8000`. Every link in that chain lives in `/home`, so a replacement
+restores all of it:
+
+| route | dev (`bun run dev`, what the platform boots) | prod (`bun run serve.ts`) |
+| --- | --- | --- |
+| `/api/*` | `vite.config.ts` → `server.proxy['/api']` → `127.0.0.1:8000` | `serve.ts` → `BACKEND_URL` (site/.env), else `127.0.0.1:8000` |
+| `/stripe/webhook` | `server.proxy` → `127.0.0.1:8000/api/webhooks/stripe` | `stripe-ingress.ts` → `127.0.0.1:8000/api/webhooks/stripe` |
+| `/svc/*` | `server.proxy` → `127.0.0.1:8000/api/*` | `stripe-ingress.ts` → `127.0.0.1:8000/api/*` |
+
+- `site/.env` survives (it is in `/home`), and both proxies default to
+  `127.0.0.1:8000` if `BACKEND_URL` is missing, so a lost `.env` cannot point the
+  API path at a retired host again.
+- `/api/*` is **not** blocked by the platform edge. It was verified forwarding on
+  2026-11-05. An earlier version of these notes blamed the edge for the 404s; the
+  real cause was `site/.env`'s `BACKEND_URL` pointing at the retired
+  `...-dev.ctonew.app` host.
+- `/stripe/webhook` and `/svc/*` are kept as deliberate redundancy: they never
+  read `BACKEND_URL`, so they still reach the API if that value is wrong again.
+
 ## Files
 
 | file | what it is |
@@ -55,6 +78,13 @@ sees exactly the environment it had when started by hand (platform
 | `api-autostart.ts` | the hook; installed into the site dir (copied verbatim) |
 | `install-boot-hook.sh` | idempotent installer — run after a site template reset |
 | `verify-durability.sh` | kills the API + watchdog, restarts the site server, proves recovery |
+| `site-vite.config.ts` | tracked copy of the site's `vite.config.ts` (the boot hook + dev proxy) |
+| `site-serve.ts` | tracked copy of the site's `serve.ts` (production server + `/api` proxy) |
+| `site-stripe-ingress.ts` | tracked copy of the site's `stripe-ingress.ts` (`/stripe/webhook`, `/svc/*`) |
+
+`/home/team/shared/site` is not a git repository. The `site-*` files here are the
+only record of it: edit the copy here first, then install it into the site dir
+(`install-boot-hook.sh` does that for the files it knows about).
 
 ## Verify it
 
