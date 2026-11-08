@@ -66,10 +66,16 @@ for (let attempt = 1; ; attempt++) {
 
           const backendUrl = `${backendBaseUrl}${pathname}${url.search}`;
           try {
+            // Raw bytes, never `req.text()`. Decoding the body as UTF-8 and
+            // re-encoding it replaces every byte that is not valid UTF-8 with
+            // U+FFFD, which silently corrupts binary uploads (evidence files) on
+            // their way to the API — the stored file is bigger than the original
+            // and unusable. `stripe-ingress.ts` already forwards raw for exactly
+            // this reason; this proxy must do the same.
             const backendRes = await fetch(backendUrl, {
               method: req.method,
               headers: req.headers,
-              body: req.method !== "GET" && req.method !== "HEAD" ? await req.text() : undefined,
+              body: req.method !== "GET" && req.method !== "HEAD" ? await req.arrayBuffer() : undefined,
             });
             return new Response(backendRes.body, {
               status: backendRes.status,

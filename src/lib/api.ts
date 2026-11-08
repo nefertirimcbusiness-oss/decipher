@@ -131,6 +131,58 @@ export const entries = {
   },
 };
 
+// --- Export API ("Save my scrapbook") ---
+//
+// The privacy policy promises a portable copy of a user's data, so this is the
+// mechanism behind that promise: one JSON file with the account, every entry,
+// the evidence files themselves (base64, with a sha256 of each), the edit log
+// with its reasons, and the Savid conversations. The server decides whose data
+// this is from the bearer token alone — there is no user id to pass.
+
+export interface ExportResult {
+  filename: string;
+  bytes: number;
+}
+
+function filenameFromDisposition(header: string | null): string | null {
+  if (!header) return null;
+  const match = /filename="?([^";]+)"?/i.exec(header);
+  return match ? match[1] : null;
+}
+
+export const exportData = {
+  async download(): Promise<ExportResult> {
+    const token = getToken();
+    if (!token) throw new Error("Please sign in again to save your scrapbook.");
+
+    const res = await fetch(`${API_BASE}/export`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ error: "Unknown error" }));
+      throw new Error(error.error || `Request failed: ${res.status}`);
+    }
+
+    const blob = await res.blob();
+    const filename =
+      filenameFromDisposition(res.headers.get("Content-Disposition")) ||
+      `decipher-scrapbook-${new Date().toISOString().slice(0, 10)}.json`;
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    // Give the browser a moment to start the download before the blob goes away.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    return { filename, bytes: blob.size };
+  },
+};
+
 // --- Savid API ---
 
 export const savid = {
