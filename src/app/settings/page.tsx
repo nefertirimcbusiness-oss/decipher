@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button, Input, Card } from "@/components";
-import { auth, subscription } from "@/lib/api";
+import { auth, subscription, exportData } from "@/lib/api";
 
 export default function SettingsPage() {
   const [name, setName] = useState("");
@@ -11,6 +11,8 @@ export default function SettingsPage() {
   const [subLoading, setSubLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [cancelConfirm, setCancelConfirm] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!auth.isAuthenticated()) return;
@@ -43,6 +45,25 @@ export default function SettingsPage() {
   const handleLogout = () => {
     auth.logout();
     window.location.href = "/";
+  };
+
+  // "Save my scrapbook" — downloads a complete copy of this user's own data.
+  // The message stays on the page afterwards so there is a visible record that
+  // it worked (or why it didn't), not just a file appearing in a folder.
+  const handleExport = async () => {
+    setExporting(true);
+    setExportMessage(null);
+    try {
+      const { filename, bytes } = await exportData.download();
+      const size = bytes >= 1024 * 1024
+        ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+        : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+      setExportMessage(`Saved ${filename} (${size}) — your whole scrapbook is in that file.`);
+    } catch (err: any) {
+      setExportMessage(err.message || "Could not save your scrapbook. Please try again.");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const statusLabel = (status: string) => {
@@ -163,11 +184,20 @@ export default function SettingsPage() {
 
         <Card>
           <h2 className="font-body text-h4 font-semibold text-charcoal mb-4">🔒 Privacy</h2>
-          <p className="text-body-small text-graphite mb-4">🔒 All data is encrypted</p>
+          <p className="text-body-small text-graphite mb-1">🔒 All data is encrypted</p>
+          <p className="text-body-small text-stone mb-4">
+            Your scrapbook is yours. Save a complete copy any time — every entry, every piece of
+            evidence, your edit history and your conversations with Savid.
+          </p>
           <div className="flex flex-wrap gap-3">
-            <Button variant="secondary" size="sm">📤 Export my data</Button>
+            <Button variant="secondary" size="sm" onClick={handleExport} isLoading={exporting}>
+              📖 Save my scrapbook
+            </Button>
             <Button variant="danger" size="sm">🗑️ Delete account</Button>
           </div>
+          {exportMessage && (
+            <p className="text-body-small text-graphite mt-3" role="status">{exportMessage}</p>
+          )}
         </Card>
 
         <Card>

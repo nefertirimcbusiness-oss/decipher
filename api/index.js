@@ -13,6 +13,7 @@ import entryRoutes from './routes/entries.js';
 import subscriptionRoutes from './routes/subscriptions.js';
 import savidRoutes from './routes/savid.js';
 import accountRoutes from './routes/account.js';
+import exportRoutes from './routes/export.js';
 import { initializeDatabase } from './init-db.js';
 
 const app = express();
@@ -20,7 +21,11 @@ const PORT = 8000;
 
 initializeDatabase();
 
-app.use(cors());
+// The export endpoint answers with `Content-Disposition` so a browser saves the
+// bundle under a sensible name. Cross-origin callers can only read that header if
+// it is explicitly exposed, so it is listed here; the client falls back to a name
+// of its own if the header is missing.
+app.use(cors({ exposedHeaders: ['Content-Disposition'] }));
 app.use(morgan('dev'));
 // Store raw body for Stripe webhook verification
 app.use(express.json({
@@ -36,6 +41,7 @@ app.use('/api/entries', entryRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/savid', savidRoutes);
 app.use('/api/account', accountRoutes);
+app.use('/api/export', exportRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
