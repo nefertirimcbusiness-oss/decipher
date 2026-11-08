@@ -14,6 +14,18 @@ export default function SubscribePage() {
 
     try {
       const { checkoutUrl } = await subscription.createCheckout();
+      // The redirect target comes from the API, so treat it as untrusted: only
+      // follow it if it is genuinely a Stripe Checkout session on the expected
+      // origin. Anything else (a relative path, a lookalike host, javascript:)
+      // would turn a compromised or misconfigured API into an open redirect.
+      if (
+        typeof checkoutUrl !== "string" ||
+        !checkoutUrl.startsWith("https://checkout.stripe.com/")
+      ) {
+        throw new Error(
+          "We couldn't open checkout just now. Please try again in a moment."
+        );
+      }
       window.location.href = checkoutUrl;
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please try again.");

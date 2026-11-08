@@ -44,9 +44,11 @@ function SuccessContent() {
       .getStatus()
       .then(setSub)
       .catch(() => {
-        // Status lookup is best-effort; the checkout may have succeeded even
-        // if this call hiccups, so keep the confirmation experience intact.
-        setSub({ plan: "Decipher Monthly", status: "active", nextBilling: "", trialEnd: "" });
+        // Never invent a status. This page is reachable by anyone who types the
+        // URL, so synthesising "active" here showed a paid subscription that may
+        // not exist. Say we could not confirm it and point at Settings, where the
+        // real status is read from the API.
+        setError("status-unavailable");
       })
       .finally(() => setLoading(false));
   }, []);
@@ -70,10 +72,14 @@ function SuccessContent() {
 
         <Card>
           <div className="p-2">
-            {/* Success marker */}
-            <div className="inline-flex items-center gap-2 bg-success/10 text-success text-body-small font-semibold px-3 py-1.5 rounded-full mb-6">
-              ✓ Checkout complete
-            </div>
+            {/* Success marker. Stripe appends ?session_id=... to the success
+                URL, so its absence means someone typed this address instead of
+                arriving from checkout — don't claim their checkout completed. */}
+            {sessionId && (
+              <div className="inline-flex items-center gap-2 bg-success/10 text-success text-body-small font-semibold px-3 py-1.5 rounded-full mb-6">
+                ✓ Checkout complete
+              </div>
+            )}
 
             {/* Subscription status */}
             {loading ? (
@@ -83,10 +89,20 @@ function SuccessContent() {
             ) : error === "not-authenticated" ? (
               <div className="text-body text-graphite mb-6">
                 <p className="mb-2">
-                  You&apos;re all set! Your subscription is being activated.
+                  You&apos;re not signed in on this device, so we can&apos;t show
+                  your subscription here.
                 </p>
                 <p className="text-body-small text-stone">
-                  Please log in to see your account details.
+                  Log in to see your account details.
+                </p>
+              </div>
+            ) : error === "status-unavailable" ? (
+              <div className="text-body text-graphite mb-6">
+                <p className="mb-2">
+                  We couldn&apos;t confirm your subscription yet — check Settings.
+                </p>
+                <p className="text-body-small text-stone">
+                  If you just paid, your subscription may still be activating.
                 </p>
               </div>
             ) : sub ? (

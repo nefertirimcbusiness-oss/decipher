@@ -184,7 +184,6 @@ export default function SettingsPage() {
 
         <Card>
           <h2 className="font-body text-h4 font-semibold text-charcoal mb-4">🔒 Privacy</h2>
-          <p className="text-body-small text-graphite mb-1">🔒 All data is encrypted</p>
           <p className="text-body-small text-stone mb-4">
             Your scrapbook is yours. Save a complete copy any time — every entry, every piece of
             evidence, your edit history and your conversations with Savid.

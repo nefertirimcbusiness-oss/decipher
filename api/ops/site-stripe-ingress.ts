@@ -69,11 +69,14 @@ async function proxyRaw(req: Request, target: string): Promise<Response> {
     return new Response(res.body, { status: res.status, headers: res.headers });
   } catch (err) {
     const message = (err as Error)?.message ?? String(err);
+    // Log the target and the cause here; return neither. Telling the caller the
+    // internal address of the backend turns a transient outage into a map of
+    // this box for anyone who can trigger it.
     console.error(`[API ingress] ${req.method} ${target} failed: ${message}`);
-    return new Response(
-      JSON.stringify({ error: "Backend unavailable", message, target }),
-      { status: 502, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Backend unavailable" }), {
+      status: 502,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 
