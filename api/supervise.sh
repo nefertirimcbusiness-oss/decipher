@@ -27,10 +27,15 @@ PIDFILE="$DIR/.api.pid"
 WATCHDOG_PATTERN="supervise.sh watchdog"
 AUTOSTART_FILE="/etc/profile.d/zz-decipher-api.sh"
 
-# The server reads most config from ./.env (dotenv). TEAM_DB_* only exist as shell
-# exports, so load the platform env files if this script was started from a bare shell.
-[ -z "${TEAM_DB_URL:-}" ] && [ -r /etc/profile.d/team-env.sh ] && . /etc/profile.d/team-env.sh
+# The server reads its config from ./.env (dotenv), so it needs no shell setup.
 [ -z "${STRIPE_SECRET_KEY:-}" ] && [ -r /etc/profile.d/cto-env-vars.sh ] && . /etc/profile.d/cto-env-vars.sh
+
+# The API used to reach its database through the `team-db` CLI, which synced every
+# statement to a remote Turso replica using TEAM_DB_URL from the platform env. The
+# product now has its own private SQLite file (decipher-api/data/decipher.db), so
+# these are scrubbed from the environment before the server starts: nothing the API
+# runs can touch, or push to, the team's coordination database again.
+unset TEAM_DB_URL TEAM_DB_PATH TEAM_DB_TOKEN TEAM_DB_AUTH_TOKEN
 
 ts() { date -u '+%Y-%m-%dT%H:%M:%SZ'; }
 # Log every event to supervisor.log exactly once; also echo to the terminal when a

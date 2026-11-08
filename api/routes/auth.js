@@ -4,8 +4,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db.js';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+// No fallback: importing this throws when JWT_SECRET is missing, so the process
+// cannot boot with a published signing secret.
+import { JWT_SECRET } from '../lib/config.js';
 
 router.post('/signup', async (req, res) => {
   const { email, password } = req.body;

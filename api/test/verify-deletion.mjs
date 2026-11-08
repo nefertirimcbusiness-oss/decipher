@@ -2,25 +2,32 @@
 // End-to-end proof that deletion actually deletes.
 //
 // Runs against a *running* API instance (point BASE_URL at it) and inspects the
-// real uploads directory and the real team-db database, so every claim is checked
+// real uploads directory and the real database file, so every claim is checked
 // against observable state rather than the API's own response body.
 //
 //   BASE_URL=http://127.0.0.1:8123 \
 //   UPLOADS_DIR=/tmp/decipher-api-test/uploads \
+//   DECIPHER_DB_PATH=/tmp/decipher-api-test/data/decipher.db \
 //   STRIPE_TEST_KEY=sk_test_... \
 //   node test/verify-deletion.mjs
 //
-// STRIPE_TEST_KEY is optional: without it the account-deletion test still runs but
-// uses a subscription row with no Stripe id, and the Stripe cancellation path is
-// reported as NOT exercised here (it is covered by test/stripe-cancel-branches.mjs).
+// DECIPHER_DB_PATH must match the instance under test (default: this checkout's
+// api/data/decipher.db). STRIPE_TEST_KEY is optional: without it the account-deletion
+// test still runs but uses a subscription row with no Stripe id, and the Stripe
+// cancellation path is reported as NOT exercised here (it is covered by
+// test/stripe-cancel-branches.mjs).
 //
 // Every user and Stripe object it creates is removed at the end.
-import { execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import { DatabaseSync } from 'node:sqlite';
 
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:8123';
 const UPLOADS = process.env.UPLOADS_DIR || path.resolve(process.cwd(), 'uploads');
+const DB_FILE = process.env.DECIPHER_DB_PATH
+  ? path.resolve(process.env.DECIPHER_DB_PATH)
+  : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'data', 'decipher.db');
 const TEST_KEY = process.env.STRIPE_TEST_KEY || '';
 const TAG = `${Date.now()}-${process.pid}`;
 const PASSWORD = 'test-password-123';
@@ -38,10 +45,17 @@ function check(label, ok, detail = '') {
   }
 }
 
+// The API's own database file, opened directly so the checks read state the API
+// cannot fake. Opened per call: this script is short-lived and must not hold a
+// write lock the running server needs.
 function sql(statement) {
-  const out = execFileSync('team-db', [statement], { encoding: 'utf8' });
-  const trimmed = (out || '').trim();
-  return trimmed ? JSON.parse(trimmed) : [];
+  const db = new DatabaseSync(DB_FILE);
+  try {
+    db.exec('PRAGMA busy_timeout = 5000');
+    return db.prepare(statement).all();
+  } finally {
+    db.close();
+  }
 }
 const v = (x) => (x === null || x === undefined ? 'NULL' : typeof x === 'number' ? String(x) : `'${String(x).replace(/'/g, "''")}'`);
 const count = (statement) => Number(Object.values(sql(statement)[0] ?? { n: 0 })[0] ?? 0);
