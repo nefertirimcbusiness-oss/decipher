@@ -13,10 +13,16 @@ Backend API for the Decipher app.
     ```bash
     node init-db.js
     ```
+    The API creates `api/data/decipher.db` on first boot; there is nothing to install
+    and no server to run. See [Database](#database).
 
 3.  Configure environment variables in `.env`:
     *   `PORT`: Server port (default 8000)
-    *   `JWT_SECRET`: Secret for JWT tokens
+    *   `JWT_SECRET`: Secret for JWT tokens — **required**, at least 32 random bytes.
+        The process refuses to start without it, and refuses to start if it is set to a
+        value published in this repository. Generate one with:
+        `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+    *   `DECIPHER_DB_PATH`: optional override for the database file (tests, one-off instances)
     *   `STRIPE_SECRET_KEY`: Your Stripe secret key
     *   `STRIPE_PRICE_ID`: Stripe price ID for the subscription
     *   `STRIPE_COUPON_ID`: Stripe coupon ID for the 50% discount
@@ -97,10 +103,40 @@ wiped by a machine replacement, re-run `install-autostart`.
 
 ### Environment the supervisor needs
 
-The server loads `./.env` itself (dotenv), so Stripe, JWT, frontend and Savid settings survive
-a restart without any shell setup. The `TEAM_DB_*` variables are only exported by the shell
-(`/etc/profile.d/team-env.sh`); `supervise.sh` sources that file (and `cto-env-vars.sh`) when
-they are missing, so the `team-db` CLI the database layer shells out to keeps working.
+The server loads `./.env` itself (dotenv), so Stripe, JWT, frontend, Savid and database
+settings survive a restart without any shell setup. `supervise.sh` deliberately does **not**
+source `/etc/profile.d/team-env.sh` any more, and it unsets `TEAM_DB_URL` / `TEAM_DB_PATH`
+before starting node: the API no longer has any path to the team's coordination database.
+
+## Database
+
+The product's data lives in its own SQLite file:
+
+```
+/home/team/shared/decipher-api/data/decipher.db        (+ -wal / -shm while running)
+```
+
+*   **Private.** It is not the team's coordination database (`/home/team/.data/agent-team-*.db`,
+    the task board) and nothing syncs it anywhere. Until 2026-11-08 the data layer shelled out
+    to the `team-db` CLI for every statement, which put users, entries, Savid conversations and
+    evidence rows into that shared file and pushed them to a remote Turso replica on every
+    query.
+*   **Durable.** It sits under `/home`, the part of this machine that survives a machine
+    replacement. `/etc` does not.
+*   **Driver.** `node:sqlite` (`DatabaseSync`), built into Node 22 — no dependency, no install,
+    no service. Parameters are always bound by the driver; no value is ever interpolated into
+    SQL text. `db.js` keeps a capped prepared-statement cache.
+*   **Created on demand.** `init-db.js` runs at boot (`CREATE TABLE IF NOT EXISTS` + indexes),
+    so "file does not exist yet" is a normal state, not an error.
+*   **Override** with `DECIPHER_DB_PATH` for a throwaway instance; the default is
+    module-relative, so each copy of the API owns the database next to itself.
+
+```bash
+# inspect it
+node -e "const {DatabaseSync}=require('node:sqlite');const d=new DatabaseSync('data/decipher.db');console.log(d.prepare(\"SELECT name FROM sqlite_master WHERE type='table'\").all())"
+```
+
+`api/data/` is git-ignored: the database is data, never code.
 
 ## API Endpoints
 
@@ -173,6 +209,9 @@ node ops/delete-account.js --email user@example.com --confirm # actually deletes
 ```bash
 node test/stripe-cancel-branches.mjs   # every Stripe branch, with fake clients (no network)
 
+# the private database + the closed JWT fallback, plus the whole product path:
+node test/verify-private-db.mjs        # 17 checks against http://127.0.0.1:8000
+
 # end-to-end against a running instance, real disk + real database + real Stripe TEST mode:
 BASE_URL=http://127.0.0.1:8000 \
 UPLOADS_DIR=/path/to/api/uploads \
@@ -180,8 +219,13 @@ STRIPE_TEST_KEY=sk_test_... \
 node test/verify-deletion.mjs
 ```
 
-Both scripts create their own throwaway users and remove them (and their Stripe test-mode
-objects) at the end, and fail loudly if the row counts do not return to the baseline.
+`test/verify-private-db.mjs` asserts that the database path is not the shared team database,
+that a token signed with `your-secret-key` or `decipher-secret-2026` is refused (401) while a
+real login token works, and that signup → entry with a file → edit with a reason → export →
+delete account all work against the running API.
+
+Both of the other scripts create their own throwaway users and remove them (and their Stripe
+test-mode objects) at the end, and fail loudly if the row counts do not return to the baseline.
 `UPLOADS_DIR` also overrides where uploads are written and resolved, which is how a test
 instance can be kept off the live uploads directory.
 

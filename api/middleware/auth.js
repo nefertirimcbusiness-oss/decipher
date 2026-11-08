@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { query } from '../db.js';
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+// No fallback: importing this throws when JWT_SECRET is missing (see lib/config.js).
+import { JWT_SECRET } from '../lib/config.js';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 

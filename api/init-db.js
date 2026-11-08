@@ -1,7 +1,9 @@
-import { query } from './db.js';
+import { query, DB_PATH } from './db.js';
 
 export function initializeDatabase() {
-  console.log('Initializing database...');
+  // The product's data lives in its own file, not in the team's coordination
+  // database. Printing the path at boot makes that checkable at a glance.
+  console.log(`Initializing database at ${DB_PATH} ...`);
 
   // Users table
   query(`
@@ -78,6 +80,15 @@ export function initializeDatabase() {
       FOREIGN KEY (user_id) REFERENCES users(id)
     )
   `);
+
+  // Indexes for the lookups the API makes on nearly every request. The shared
+  // coordination database had none of these because it was never designed to hold
+  // the product's rows.
+  query('CREATE INDEX IF NOT EXISTS idx_entries_user ON entries(user_id, created_at DESC)');
+  query('CREATE INDEX IF NOT EXISTS idx_evidence_entry ON evidence_files(entry_id)');
+  query('CREATE INDEX IF NOT EXISTS idx_edits_entry ON edits(entry_id)');
+  query('CREATE INDEX IF NOT EXISTS idx_savid_entry ON savid_conversations(entry_id, created_at)');
+  query('CREATE INDEX IF NOT EXISTS idx_subs_user ON subscriptions(user_id)');
 
   console.log('Database initialization complete.');
 }
