@@ -114,7 +114,10 @@ export const entries = {
       const formData = new FormData();
       formData.append("title", data.title);
       formData.append("content", data.content);
-      data.files.forEach((f) => formData.append("files", f));
+      // The field name is the API's contract: multer reads `upload.array("evidence")`.
+      // Anything else is an unexpected field, which multer reports as a 500 — every
+      // entry created with a file attached failed until this matched.
+      data.files.forEach((f) => formData.append("evidence", f));
       return request<Entry>("/entries", { method: "POST", body: formData });
     }
     return request<Entry>("/entries", {
@@ -123,9 +126,12 @@ export const entries = {
     });
   },
 
+  // The API defines `PUT /entries/:id` (and only PUT). A PATCH here hit no route at
+  // all, so every edit made from the app 404'd — and with it the promise that an
+  // edit is only allowed with a logged reason, because the reason never arrived.
   update(id: string, data: { title?: string; content?: string; reason: string }) {
     return request<Entry>(`/entries/${id}`, {
-      method: "PATCH",
+      method: "PUT",
       body: JSON.stringify(data),
     });
   },

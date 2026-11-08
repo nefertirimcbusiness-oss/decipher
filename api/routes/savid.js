@@ -57,15 +57,29 @@ router.post('/chat', async (req, res) => {
   }
 });
 
-router.get('/:entryId', async (req, res) => {
-  const { entryId } = req.params;
-  try {
-    const conversation = query('SELECT * FROM savid_conversations WHERE entry_id = ? ORDER BY created_at ASC', [entryId]);
-    res.json(conversation);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+  // Read the conversation for one entry.
+  //
+  // `savid_conversations` rows are keyed by entry only, so querying them by
+  // `entry_id` alone handed any signed-in user any other user's conversation with
+  // Savid — the most private text in the product. The entry is looked up scoped to
+  // `req.userId` first (same pattern as `router.get('/:id')` in entries.js), and a
+  // mismatch is a 404 rather than a 403: in an app full of trauma journals, even
+  // "that entry exists but is not yours" is information the caller must not get.
+  router.get('/:entryId', async (req, res) => {
+    const { entryId } = req.params;
+    const userId = req.userId;
+    try {
+      const entryRows = query('SELECT id FROM entries WHERE id = ? AND user_id = ?', [entryId, userId]);
+      if (entryRows.length === 0) {
+        return res.status(404).json({ error: 'Entry not found' });
+      }
+
+      const conversation = query('SELECT * FROM savid_conversations WHERE entry_id = ? ORDER BY created_at ASC', [entryId]);
+      res.json(conversation);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 
 export default router;

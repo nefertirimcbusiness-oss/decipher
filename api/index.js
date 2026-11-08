@@ -15,6 +15,8 @@ import savidRoutes from './routes/savid.js';
 import accountRoutes from './routes/account.js';
 import exportRoutes from './routes/export.js';
 import { initializeDatabase } from './init-db.js';
+import authMiddleware from './middleware/auth.js';
+import { serveEvidenceFile } from './lib/serve-evidence.js';
 
 const app = express();
 const PORT = 8000;
@@ -34,7 +36,11 @@ app.use(express.json({
   }
 }));
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Evidence files are only ever served to the user who uploaded them. This used to
+// be `express.static(...)`: an unauthenticated file server for every photo, audio
+// recording and document in the product. `serveEvidenceFile` answers 404 for any
+// file the caller does not own, so a URL alone reveals nothing.
+app.use('/uploads', authMiddleware, serveEvidenceFile);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/entries', entryRoutes);
