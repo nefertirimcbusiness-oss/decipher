@@ -215,6 +215,7 @@ node test/verify-private-db.mjs        # 17 checks against http://127.0.0.1:8000
 # end-to-end against a running instance, real disk + real database + real Stripe TEST mode:
 BASE_URL=http://127.0.0.1:8000 \
 UPLOADS_DIR=/path/to/api/uploads \
+DECIPHER_DB_PATH=/path/to/api/data/decipher.db \
 STRIPE_TEST_KEY=sk_test_... \
 node test/verify-deletion.mjs
 ```
