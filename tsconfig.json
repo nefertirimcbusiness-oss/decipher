@@ -30,5 +30,10 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "api_bkup", "engine_bkup", "design_bkup"]
+  // api/ops holds the site server's source (serve.ts, stripe-ingress.ts). It is
+  // not part of the Next app: those files run inside the team site project, which
+  // has its own tsconfig, and they import that project's build output
+  // (./dist/server/server.js) which does not exist here. Type-checking them from
+  // this app failed the build; they are checked where they run instead.
+  "exclude": ["node_modules", "api_bkup", "engine_bkup", "design_bkup", "api/ops"]
 }
