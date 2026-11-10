@@ -7,8 +7,40 @@ import { query } from '../db.js';
 // No fallback: importing this throws when JWT_SECRET is missing, so the process
 // cannot boot with a published signing secret.
 import { JWT_SECRET } from '../lib/config.js';
+import { rateLimit, clientIp, emailKey } from '../lib/rate-limit.js';
 
-router.post('/signup', async (req, res) => {
+// Public, unauthenticated, and expensive (bcrypt). Two budgets per route: one per
+// client address, one per account being attempted. The address alone is not
+// enough — an attacker rotating addresses still hammers one account — and the
+// account alone is not enough, since it lets a caller spray many accounts.
+const signupLimit = rateLimit([
+  {
+    name: 'signup:ip',
+    key: clientIp,
+    windowMs: 60 * 60 * 1000,
+    max: 20,
+    message: 'Too many accounts created from here. Please try again later.'
+  }
+]);
+
+const loginLimit = rateLimit([
+  {
+    name: 'login:ip',
+    key: clientIp,
+    windowMs: 5 * 60 * 1000,
+    max: 20,
+    message: 'Too many sign-in attempts. Please wait a few minutes and try again.'
+  },
+  {
+    name: 'login:email',
+    key: emailKey,
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: 'Too many sign-in attempts for this account. Please wait a few minutes and try again.'
+  }
+]);
+
+router.post('/signup', signupLimit, async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });
@@ -32,7 +64,7 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimit, async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });

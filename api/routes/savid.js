@@ -4,12 +4,33 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db.js';
 import auth from '../middleware/auth.js';
 import { SavidEngine } from 'savid-engine';
+import { rateLimit, clientIp, userKey } from '../lib/rate-limit.js';
 
 const savid = new SavidEngine();
 
 router.use(auth);
 
-router.post('/chat', async (req, res) => {
+// Every chat turn costs an AI call, so it is the most expensive thing a signed-in
+// user can ask for. The per-user budget is the real one; the address budget is a
+// backstop against one machine opening many accounts to pool them.
+const chatLimit = rateLimit([
+  {
+    name: 'savid:user',
+    key: userKey,
+    windowMs: 5 * 60 * 1000,
+    max: 30,
+    message: 'Savid needs a moment. Please wait a few minutes before continuing this conversation.'
+  },
+  {
+    name: 'savid:ip',
+    key: clientIp,
+    windowMs: 5 * 60 * 1000,
+    max: 120,
+    message: 'Savid needs a moment. Please wait a few minutes and try again.'
+  }
+]);
+
+router.post('/chat', chatLimit, async (req, res) => {
   const { entryId, message } = req.body || {};
   const userId = req.userId;
 

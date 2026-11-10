@@ -27,6 +27,13 @@ initializeDatabase();
 // bundle under a sensible name. Cross-origin callers can only read that header if
 // it is explicitly exposed, so it is listed here; the client falls back to a name
 // of its own if the header is missing.
+// The only proxy in front of this API is the site's own proxy on loopback, so
+// loopback is the only address whose X-Forwarded-For is believed. That makes
+// req.ip the caller's address as the platform edge reported it (the header is
+// rewritten at the edge — a client cannot forge one), and it keeps a direct
+// connection from claiming any address it likes. The rate limiter depends on
+// this; without it every request would look like 127.0.0.1.
+app.set('trust proxy', 'loopback');
 app.use(cors({ exposedHeaders: ['Content-Disposition'] }));
 app.use(morgan('dev'));
 // Store raw body for Stripe webhook verification
