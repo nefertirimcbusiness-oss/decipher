@@ -17,7 +17,13 @@ router.post('/create', async (req, res) => {
     const priceId = process.env.STRIPE_PRICE_ID; 
     const couponId = process.env.STRIPE_COUPON_ID;
 
+    // The account this checkout belongs to is recorded on the session itself.
+    // The webhook resolves the user from these fields, never from the email
+    // address the payer types at checkout — that field is payer-editable, so
+    // keying on it let anyone attach a payment to somebody else's account.
     const session = await stripe.checkout.sessions.create({
+      client_reference_id: String(user.id),
+      metadata: { user_id: String(user.id) },
       customer_email: user.email,
       payment_method_types: ['card'],
       line_items: [{
