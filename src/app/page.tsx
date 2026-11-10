@@ -51,6 +51,20 @@ export default function LandingPage() {
             <p className="text-body-small text-stone mt-4">
               7-day free trial · $24.99/month after · Cancel anytime
             </p>
+
+            {/* Legal notice — above the fold, bold charcoal text for WCAG AA */}
+            <div className="mx-auto mt-8 max-w-xl rounded-xl border border-mist bg-white/80 px-4 py-3 text-center">
+              <p className="legal-notice">
+                Decipher is not a substitute for professional medical or
+                therapeutic advice. Users hold themselves responsible for their
+                own actions.
+              </p>
+              <p className="legal-notice mt-2">
+                Not for medical, clinical, therapeutic or legal use, and Savid
+                gives no legal advice; no outcome, result or accuracy is
+                guaranteed.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -83,16 +97,6 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-
-      {/* Footer */}
-      <footer className="border-t border-mist py-6 px-4">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-caption text-stone">&copy; {new Date().getFullYear()} Decipher. All rights reserved.</p>
-          <p className="text-caption text-stone text-center max-w-md">
-            This app is not a substitute for professional medical or therapeutic advice.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
