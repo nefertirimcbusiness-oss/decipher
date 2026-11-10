@@ -89,11 +89,28 @@ app.post('/api/webhooks/stripe', async (req, res) => {
       case 'checkout.session.completed': {
         const session = event.data.object;
         const subscriptionId = session.subscription;
-        const customerEmail = session.customer_details.email;
 
-        // Find user by email
-        const users = query('SELECT id FROM users WHERE email = ?', [customerEmail]);
-        if (users.length > 0) {
+        // The owning account comes from the reference we stamped on the session
+        // when it was created. `customer_details.email` is whatever the payer
+        // typed at checkout, so using it meant paying with a victim's address
+        // wrote a subscription onto that victim's account.
+        const referencedUserId = session.client_reference_id || session.metadata?.user_id;
+        if (!referencedUserId) {
+          console.warn(
+            `[webhook] checkout.session.completed ${event.id} (${session.id}) has no client_reference_id or metadata.user_id — ignoring, no email fallback`
+          );
+          break;
+        }
+
+        const users = query('SELECT id FROM users WHERE id = ?', [referencedUserId]);
+        if (users.length === 0) {
+          console.warn(
+            `[webhook] checkout.session.completed ${event.id} (${session.id}) references unknown user ${referencedUserId} — ignoring`
+          );
+          break;
+        }
+
+        {
           const userId = users[0].id;
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
