@@ -5,6 +5,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db.js';
 import auth from '../middleware/auth.js';
 import { deleteEvidenceFiles, uploadsRoot } from '../lib/evidence-files.js';
+import {
+  multerLimits,
+  MAX_FILES_PER_ENTRY,
+  isAllowedEvidenceType,
+  rejectOversizedRequest,
+  uploadErrorHandler
+} from '../lib/upload-limits.js';
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -15,32 +22,51 @@ const storage = multer.diskStorage({
     cb(null, uuidv4() + '-' + file.originalname);
   }
 });
-const upload = multer({ storage: storage });
+// Limits are enforced while the upload streams: a file whose type is not evidence
+// is refused before multer stores it, and a file that grows past the size cap is
+// cut off and its partial copy deleted. See lib/upload-limits.js.
+const upload = multer({
+  storage: storage,
+  limits: multerLimits,
+  fileFilter: function (req, file, cb) {
+    if (!isAllowedEvidenceType(file.mimetype)) {
+      const error = new Error(`Unsupported evidence type: ${file.mimetype}`);
+      error.code = 'UNSUPPORTED_FILE_TYPE';
+      return cb(error);
+    }
+    cb(null, true);
+  }
+});
 
 router.use(auth);
 
 // Create entry
-router.post('/', upload.array('evidence'), async (req, res) => {
-  const { title, content } = req.body;
-  const userId = req.userId;
-  const entryId = uuidv4();
+router.post(
+  '/',
+  rejectOversizedRequest,
+  upload.array('evidence', MAX_FILES_PER_ENTRY),
+  async (req, res) => {
+    const { title, content } = req.body;
+    const userId = req.userId;
+    const entryId = uuidv4();
 
-  try {
-    query('INSERT INTO entries (id, user_id, title, content) VALUES (?, ?, ?, ?)', [entryId, userId, title, content]);
+    try {
+      query('INSERT INTO entries (id, user_id, title, content) VALUES (?, ?, ?, ?)', [entryId, userId, title, content]);
 
-    if (req.files) {
-      for (const file of req.files) {
-        const fileId = uuidv4();
-        query('INSERT INTO evidence_files (id, entry_id, file_path, file_type) VALUES (?, ?, ?, ?)', [fileId, entryId, file.path, file.mimetype]);
+      if (req.files) {
+        for (const file of req.files) {
+          const fileId = uuidv4();
+          query('INSERT INTO evidence_files (id, entry_id, file_path, file_type) VALUES (?, ?, ?, ?)', [fileId, entryId, file.path, file.mimetype]);
+        }
       }
-    }
 
-    res.status(201).json({ id: entryId });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
+      res.status(201).json({ id: entryId });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-});
+);
 
 // Get all entries for user
 router.get('/', async (req, res) => {
@@ -141,5 +167,9 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// multer reports its rejections as errors; without this they would surface as a
+// 500 "internal server error", which tells a caller nothing about what to fix.
+router.use(uploadErrorHandler);
 
 export default router;
