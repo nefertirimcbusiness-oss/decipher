@@ -114,6 +114,19 @@ a:hover {
   }
 }
 
+/* ============================================
+   Legal Notice
+   Every liability sentence: fully bold, text-sm, charcoal.
+   #2D2B3A on white / buttercream is ~12:1 — passes WCAG AA.
+   ============================================ */
+
+.legal-notice {
+  font-size: 0.875rem; /* text-sm */
+  font-weight: 600; /* font-semibold */
+  line-height: 1.6;
+  color: var(--color-charcoal);
+}
+
 .sr-only {
   position: absolute; width: 1px; height: 1px;
   padding: 0; margin: -1px; overflow: hidden;
