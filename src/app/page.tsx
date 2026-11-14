@@ -52,19 +52,8 @@ export default function LandingPage() {
               7-day free trial · $24.99/month after · Cancel anytime
             </p>
 
-            {/* Legal notice — above the fold, bold charcoal text for WCAG AA */}
-            <div className="mx-auto mt-8 max-w-xl rounded-xl border border-mist bg-white/80 px-4 py-3 text-center">
-              <p className="legal-notice">
-                Decipher is not a substitute for professional medical or
-                therapeutic advice. Users hold themselves responsible for their
-                own actions.
-              </p>
-              <p className="legal-notice mt-2">
-                Not for medical, clinical, therapeutic or legal use, and Savid
-                gives no legal advice; no outcome, result or accuracy is
-                guaranteed.
-              </p>
-            </div>
+            {/* The protective sentences live in the site footer as a footnote,
+                and Savid says them himself in his first chat bubble. */}
           </div>
         </section>
 
