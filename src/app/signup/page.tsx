@@ -115,7 +115,7 @@ export default function SignupPage() {
                   className="mt-1 w-4 h-4 rounded border-mist text-lilac-deep focus:ring-lilac flex-shrink-0"
                 />
                 <span>
-                  I&apos;m 18 or older, and I agree to the{" "}
+                  I agree to the{" "}
                   <a href="/terms" className="text-lilac-deep underline">Terms</a> and{" "}
                   <a href="/privacy" className="text-lilac-deep underline">Privacy Policy</a>.
                 </span>
@@ -136,15 +136,7 @@ export default function SignupPage() {
 
         <hr className="auth-divider" />
         <p className="auth-footer">
-          By signing up, you agree to our{" "}
-          <a href="/terms" className="text-lilac-deep underline">
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a href="/privacy" className="text-lilac-deep underline">
-            Privacy Policy
-          </a>
-          . See our{" "}
+          See our{" "}
           <a href="/disclaimer" className="text-lilac-deep underline">
             Health &amp; Safety Disclaimer
           </a>
