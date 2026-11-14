@@ -87,7 +87,7 @@ async function api(method, route, { token, body, form } = {}) {
 }
 
 async function signup(email) {
-  const res = await api('POST', '/api/auth/signup', { body: { email, password: PASSWORD } });
+  const res = await api('POST', '/api/auth/signup', { body: { email, password: PASSWORD, isAdult: true, acceptedTerms: true } });
   if (res.status !== 201) throw new Error(`signup failed for ${email}: ${res.status} ${JSON.stringify(res.json)}`);
   createdUserIds.push(res.json.userId);
   return res.json;

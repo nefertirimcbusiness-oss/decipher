@@ -12,6 +12,9 @@ import {
   rejectOversizedRequest,
   uploadErrorHandler
 } from '../lib/upload-limits.js';
+import { verifyEvidenceFile } from '../lib/evidence-sniff.js';
+import fs from 'fs';
+import path from 'path';
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -19,7 +22,11 @@ const storage = multer.diskStorage({
     cb(null, uploadsRoot());
   },
   filename: function (req, file, cb) {
-    cb(null, uuidv4() + '-' + file.originalname);
+    // Only the final path segment of the client's name is kept: `originalname` is
+    // whatever the client sent, and a name containing "../" would otherwise choose
+    // where the file lands.
+    const original = path.basename(String(file.originalname || 'evidence')).replace(/[^\w.\-]+/g, '_');
+    cb(null, uuidv4() + '-' + original);
   }
 });
 // Limits are enforced while the upload streams: a file whose type is not evidence
@@ -40,11 +47,48 @@ const upload = multer({
 
 router.use(auth);
 
+// After multer has stored the files, look at what they actually are.
+//
+// The type check in the multer filter is a claim made by the browser; this reads
+// the bytes and the extension and refuses anything whose content does not match
+// what it says it is. A file that fails is deleted from disk before the answer
+// goes out, so a rejected upload leaves nothing behind, and the type stored for a
+// file that passes is the one we determined — never the one the client declared.
+async function verifyUploadedEvidence(req, res, next) {
+  const files = req.files || [];
+  if (files.length === 0) return next();
+
+  for (const file of files) {
+    let verdict;
+    try {
+      verdict = await verifyEvidenceFile(file.path, file.originalname);
+    } catch (error) {
+      console.error('Evidence check failed:', error.message);
+      verdict = { ok: false, reason: 'unreadable', detail: 'the file could not be read' };
+    }
+
+    if (!verdict.ok) {
+      await Promise.all(
+        files.map((f) => fs.promises.unlink(f.path).catch(() => {}))
+      );
+      const error = new Error(`Unsupported evidence file: ${verdict.detail}`);
+      error.code = 'UNSUPPORTED_FILE_TYPE';
+      return next(error);
+    }
+
+    // Store and later serve our own answer for the type.
+    file.mimetype = verdict.mime;
+  }
+
+  next();
+}
+
 // Create entry
 router.post(
   '/',
   rejectOversizedRequest,
   upload.array('evidence', MAX_FILES_PER_ENTRY),
+  verifyUploadedEvidence,
   async (req, res) => {
     const { title, content } = req.body;
     const userId = req.userId;
