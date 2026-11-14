@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Button, Input, Card } from "@/components";
-import { auth, subscription, exportData } from "@/lib/api";
+import { Button, Input, Card, Modal } from "@/components";
+import { auth, subscription, exportData, account } from "@/lib/api";
 
 export default function SettingsPage() {
   const [name, setName] = useState("");
@@ -13,6 +13,9 @@ export default function SettingsPage() {
   const [cancelConfirm, setCancelConfirm] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [closeError, setCloseError] = useState("");
 
   useEffect(() => {
     if (!auth.isAuthenticated()) return;
@@ -66,6 +69,22 @@ export default function SettingsPage() {
     }
   };
 
+  // "Close my scrapbook" — the account and every page in it go for good. The
+  // Stripe subscription is cancelled server-side first, so no further billing.
+  const handleCloseAccount = async () => {
+    if (closing) return;
+    setClosing(true);
+    setCloseError("");
+    try {
+      await account.close();
+      auth.logout();
+      window.location.href = "/";
+    } catch (err: any) {
+      setCloseError(err.message || "Could not close your scrapbook. Nothing was deleted — please try again.");
+      setClosing(false);
+    }
+  };
+
   const statusLabel = (status: string) => {
     switch (status) {
       case "trialing": return "🟡 Trial";
@@ -77,6 +96,7 @@ export default function SettingsPage() {
   };
 
   return (
+    <>
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
       <h1 className="font-heading text-h2 font-bold text-charcoal mb-1">⚙️ Settings</h1>
       <p className="text-body text-graphite mb-8">Manage your account and preferences.</p>
@@ -192,7 +212,7 @@ export default function SettingsPage() {
             <Button variant="secondary" size="sm" onClick={handleExport} isLoading={exporting}>
               📖 Save my scrapbook
             </Button>
-            <Button variant="danger" size="sm">🗑️ Delete account</Button>
+            <Button variant="ghost" size="sm" onClick={() => setShowCloseModal(true)}>Close my scrapbook</Button>
           </div>
           {exportMessage && (
             <p className="text-body-small text-graphite mt-3" role="status">{exportMessage}</p>
@@ -208,6 +228,28 @@ export default function SettingsPage() {
           </div>
         </Card>
       </div>
+
+      <Modal
+        isOpen={showCloseModal}
+        onClose={() => { setShowCloseModal(false); setCloseError(""); }}
+        title="Close my scrapbook"
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-body text-graphite">
+            Close your scrapbook? Every page in it will be gone, and this cannot be undone.
+          </p>
+          {closeError && <p className="error-message">{closeError}</p>}
+          <div className="flex gap-3 mt-2">
+            <Button variant="ghost" onClick={() => { setShowCloseModal(false); setCloseError(""); }}>
+              Keep my scrapbook
+            </Button>
+            <Button variant="danger" onClick={handleCloseAccount} isLoading={closing}>
+              Close my scrapbook
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
+    </>
   );
 }
