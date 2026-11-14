@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button, Input, Textarea, Modal, SavidBubble, UserMessageBubble, SavidArt } from "@/components";
 import { entries, savid, auth, Entry } from "@/lib/api";
 
 export default function EntryDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const [entry, setEntry] = useState<Entry | null>(null);
   const [loading, setLoading] = useState(true);
   const [editReason, setEditReason] = useState("");
@@ -17,6 +18,9 @@ export default function EntryDetailPage() {
   const [chatInput, setChatInput] = useState("");
   const [chat, setChat] = useState<{ role: string; message: string }[]>([]);
   const [sendingChat, setSendingChat] = useState(false);
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState("");
 
   useEffect(() => {
     if (!auth.isAuthenticated() || !params.id) return;
@@ -48,9 +52,36 @@ export default function EntryDetailPage() {
     setSendingChat(true);
     try {
       const res = await savid.chat(entry.id, msg);
-      setChat((prev) => [...prev, { role: "savid", message: res.reply }]);
+      setChat((prev) => {
+        const next = [...prev];
+        // The crisis message comes from the API's own check of the user's words,
+        // so it arrives even when the model failed or was rate-limited. It is
+        // always shown first, as Savid's bubble; the model's reply may follow it.
+        if (res.crisis && res.crisis_message) {
+          next.push({ role: "savid", message: res.crisis_message });
+        }
+        if (res.reply && res.reply.trim()) {
+          next.push({ role: "savid", message: res.reply });
+        }
+        return next;
+      });
     } catch { /* ignore */ }
     setSendingChat(false);
+  };
+
+  // "Remove this page" — the page and its evidence are gone for good, so the
+  // confirmation is a question in the app's own voice, not a browser dialog.
+  const handleRemoveEntry = async () => {
+    if (!entry || removing) return;
+    setRemoving(true);
+    setRemoveError("");
+    try {
+      await entries.remove(entry.id);
+      router.push("/dashboard");
+    } catch (err) {
+      setRemoveError(err instanceof Error ? err.message : "Could not remove this page. Please try again.");
+      setRemoving(false);
+    }
   };
 
   if (loading) return (
@@ -97,6 +128,7 @@ export default function EntryDetailPage() {
 
         <div className="flex items-center gap-3 mt-6 pt-4 border-t border-mist/50">
           <Button variant="secondary" size="sm" onClick={() => setShowEditModal(true)}>✏️ Edit</Button>
+          <Button variant="ghost" size="sm" onClick={() => setShowRemoveModal(true)}>Remove this page</Button>
           {entry.editHistory && entry.editHistory.length > 0 && (
             <button className="btn btn-ghost btn-sm" onClick={() => setShowEditHistory(!showEditHistory)}>
               🕐 Edited {entry.editHistory.length} times
@@ -136,6 +168,17 @@ export default function EntryDetailPage() {
           </div>
         </div>
       </div>
+
+      <Modal isOpen={showRemoveModal} onClose={() => { setShowRemoveModal(false); setRemoveError(""); }} title="Remove this page">
+        <div className="flex flex-col gap-4">
+          <p className="text-body text-graphite">Take this page out? It will be gone from your scrapbook.</p>
+          {removeError && <p className="error-message">{removeError}</p>}
+          <div className="flex gap-3 mt-2">
+            <Button variant="ghost" onClick={() => { setShowRemoveModal(false); setRemoveError(""); }}>Keep it</Button>
+            <Button variant="danger" onClick={handleRemoveEntry} isLoading={removing}>Remove this page</Button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)} title="✏️ Edit Memory">
         <div className="flex flex-col gap-4">
