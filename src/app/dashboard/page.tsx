@@ -27,7 +27,7 @@ export default function DashboardPage() {
 
       <div className="mb-8">
         <SavidBubble
-          message={`You've written ${entryList.length} memories. That's wonderful. How about we revisit one from a rainy day?`}
+          message={`Before we start, I want to be plain with you, because you deserve that. This is your own private place for your memories — not a substitute for professional medical or therapeutic advice, and not for medical, clinical, therapeutic or legal use. I'm not a lawyer and I can't give legal advice. What I can do is sit with you and help you record what you remember.${entryList.length === 0 ? " Whenever you're ready, we can begin with the first thing that comes to mind." : ` You've written ${entryList.length} ${entryList.length === 1 ? "memory" : "memories"} so far — shall we revisit one together?`}`}
           timestamp="Just now"
         />
       </div>
