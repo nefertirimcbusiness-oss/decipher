@@ -25,6 +25,16 @@ function requireSecret(name) {
 
 export const JWT_SECRET = requireSecret('JWT_SECRET');
 
+// How long a signed-in session lasts.
+//
+// It used to be 7 days, which is a long time for a token that lives in
+// localStorage and cannot be withdrawn once issued. Signing out now revokes the
+// token server-side, and the lifetime is short enough that a token copied off the
+// machine — or one that was never signed out — stops working on its own within a
+// day. The client signs the user back in when it expires.
+export const SESSION_TTL_SECONDS = 24 * 60 * 60;
+export const SESSION_TTL = '24h';
+
 // Known-public strings that must never be accepted as a signing secret.
 const PUBLISHED_SECRETS = new Set(['your-secret-key', 'decipher-secret-2026', 'secret', 'changeme']);
 

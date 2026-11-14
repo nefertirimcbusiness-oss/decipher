@@ -19,7 +19,10 @@ import authMiddleware from './middleware/auth.js';
 import { serveEvidenceFile } from './lib/serve-evidence.js';
 
 const app = express();
-const PORT = 8000;
+// 8000 unless a verification run asks for its own port, so a test can start a
+// throwaway instance beside the live one. Not `PORT`: this machine exports PORT=80
+// globally, and obeying it would move the API onto a privileged port.
+const PORT = Number(process.env.DECIPHER_API_PORT) || 8000;
 
 initializeDatabase();
 

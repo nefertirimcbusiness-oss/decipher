@@ -79,6 +79,17 @@ export const auth = {
   },
 
   logout() {
+    // End the session on the server too. The token is revoked there, so a copy of
+    // it taken before signing out stops working — clearing localStorage alone
+    // left a valid key behind. Fired and forgotten: signing out locally must not
+    // wait on the network.
+    const token = getToken();
+    if (token) {
+      void fetch(`${API_BASE}/auth/logout`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
     clearToken();
   },
 

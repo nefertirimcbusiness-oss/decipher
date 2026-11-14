@@ -58,7 +58,7 @@ const stamp = Date.now();
 const email = `private-db.${stamp}@example.com`;
 const password = 'correct-horse-battery-staple';
 
-const signup = await api('/auth/signup', { method: 'POST', body: { email, password } });
+const signup = await api('/auth/signup', { method: 'POST', body: { email, password, isAdult: true, acceptedTerms: true } });
 record('signup', signup.status === 201 && !!signup.json?.userId, `status=${signup.status} userId=${signup.json?.userId}`);
 const userId = signup.json?.userId;
 

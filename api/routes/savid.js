@@ -5,8 +5,13 @@ import { query } from '../db.js';
 import auth from '../middleware/auth.js';
 import { SavidEngine } from 'savid-engine';
 import { rateLimit, clientIp, userKey } from '../lib/rate-limit.js';
+import { CRISIS_MESSAGE, detectCrisis, isFallbackReply } from '../lib/crisis.js';
 
 const savid = new SavidEngine();
+
+// What Savid says when the engine cannot answer at all and nothing is in danger.
+const CALM_FALLBACK =
+  "I'm here, and I'm listening. Sometimes the words are hard to find, and that's okay. Take a deep breath.";
 
 router.use(auth);
 
@@ -61,17 +66,61 @@ router.post('/chat', chatLimit, async (req, res) => {
     const userMsgId = uuidv4();
     query('INSERT INTO savid_conversations (id, entry_id, role, message) VALUES (?, ?, ?, ?)', [userMsgId, entryId, 'user', message]);
 
-    // 3. Call Savid Engine
-    const response = await savid.generateResponse(message, history);
-    const savidText = response.savid_response;
-    
-    // 4. Save Savid response
-    const savidMsgId = uuidv4();
-    query('INSERT INTO savid_conversations (id, entry_id, role, message) VALUES (?, ?, ?, ?)', [savidMsgId, entryId, 'savid', savidText]);
+    // 3. Is this a crisis? Asked of the user's own words, before the model is
+    // called, so the answer does not depend on the model being reachable.
+    const crisis = detectCrisis(message);
+
+    // 4. Call Savid Engine. A throw here must not lose the crisis reply, so the
+    // failure is contained and handled below rather than escaping to the 500.
+    let response;
+    let savidText;
+    try {
+      response = await savid.generateResponse(message, history);
+      savidText = response && typeof response.savid_response === 'string' ? response.savid_response : null;
+    } catch (error) {
+      console.error('Savid engine failed:', error.message);
+      response = null;
+      savidText = null;
+    }
+
+    if (crisis) {
+      // The crisis message is returned whatever the model did. When the model
+      // produced a real reply it follows the crisis message; when it failed, was
+      // rate-limited, or answered with its canned fallback, the crisis message is
+      // the reply — the fallback must never be the only thing someone in danger
+      // hears.
+      const modelReplied = !isFallbackReply(savidText);
+      const reply = modelReplied ? savidText : CRISIS_MESSAGE;
+
+      // Both are stored, in the order they are shown, so the conversation reads
+      // the same after a refresh as it did live.
+      query('INSERT INTO savid_conversations (id, entry_id, role, message) VALUES (?, ?, ?, ?)', [uuidv4(), entryId, 'savid', CRISIS_MESSAGE]);
+      if (modelReplied) {
+        query('INSERT INTO savid_conversations (id, entry_id, role, message) VALUES (?, ?, ?, ?)', [uuidv4(), entryId, 'savid', savidText]);
+      }
+
+      // `crisis` and `crisis_message` let the client render the 988 message as a
+      // Savid bubble of its own, above whatever the model added.
+      return res.json({
+        ...(response || {}),
+        reply,
+        crisis: true,
+        crisis_message: CRISIS_MESSAGE,
+        follow_up_questions: (response && response.follow_up_questions) || [],
+        emotional_analysis: (response && response.emotional_analysis) || null
+      });
+    }
+
+    // 5. No crisis. An engine that failed outright still gets a gentle answer
+    // rather than a null reply.
+    const savidText2 = savidText || CALM_FALLBACK;
+
+    // 6. Save Savid response
+    query('INSERT INTO savid_conversations (id, entry_id, role, message) VALUES (?, ?, ?, ?)', [uuidv4(), entryId, 'savid', savidText2]);
 
     // `reply` is the field the client reads (src/lib/api.ts -> savid.chat);
     // `savid_response` is kept because it is the engine's own shape.
-    res.json({ ...response, reply: savidText });
+    res.json({ ...(response || {}), reply: savidText2, crisis: false });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });

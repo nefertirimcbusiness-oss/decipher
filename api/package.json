@@ -8,6 +8,8 @@
     "test": "node test/stripe-cancel-branches.mjs",
     "verify:deletion": "node test/verify-deletion.mjs",
     "verify:private-db": "node test/verify-private-db.mjs",
+    "verify:crisis-net": "node test/verify-crisis-net.mjs",
+    "verify:safety": "node test/verify-safety.mjs",
     "start": "node index.js"
   },
   "keywords": [],

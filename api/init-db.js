@@ -1,5 +1,13 @@
 import { query, DB_PATH } from './db.js';
 
+// ADD COLUMN if the column is not already there. SQLite has no
+// "ADD COLUMN IF NOT EXISTS", so the current shape is read first.
+function addColumnIfMissing(table, column, definition) {
+  const columns = query(`PRAGMA table_info(${table})`);
+  if (columns.some((row) => row.name === column)) return;
+  query(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+}
+
 export function initializeDatabase() {
   // The product's data lives in its own file, not in the team's coordination
   // database. Printing the path at boot makes that checkable at a glance.
@@ -13,9 +21,22 @@ export function initializeDatabase() {
       password_hash TEXT NOT NULL,
       stripe_customer_id TEXT,
       subscription_status TEXT DEFAULT 'inactive',
+      is_adult INTEGER,
+      terms_version TEXT,
+      terms_accepted_at TEXT,
+      accepted_ip TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // Databases created before the age gate and the consent record existed need the
+  // new columns added in place. ADD COLUMN is additive and leaves existing rows
+  // alone; their values are NULL, which is the honest answer for a row written
+  // when neither was asked.
+  addColumnIfMissing('users', 'is_adult', 'INTEGER');
+  addColumnIfMissing('users', 'terms_version', 'TEXT');
+  addColumnIfMissing('users', 'terms_accepted_at', 'TEXT');
+  addColumnIfMissing('users', 'accepted_ip', 'TEXT');
 
   // Entries table
   query(`
@@ -78,6 +99,23 @@ export function initializeDatabase() {
       trial_end DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `);
+
+  // Sessions ended by signing out.
+  //
+  // A token is a signed statement, not a handle: before this table existed,
+  // "log out" only removed the copy in the browser, and the token itself stayed
+  // valid for its full lifetime — so anyone who had it (a shared laptop, a stolen
+  // backup, an extension) could keep reading a trauma journal. Signing out now
+  // records the token's id here, and the auth middleware refuses it. Rows expire
+  // with the token, and are cleared out as they do.
+  query(`
+    CREATE TABLE IF NOT EXISTS revoked_tokens (
+      jti TEXT PRIMARY KEY,
+      user_id TEXT,
+      expires_at INTEGER NOT NULL,
+      revoked_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
 

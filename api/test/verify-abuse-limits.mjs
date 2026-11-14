@@ -47,7 +47,7 @@ let signupToken = null;
 let signupCreated = 0;
 let signup429 = null;
 for (let i = 1; i <= 45; i += 1) {
-  const r = await post('/auth/signup', { email: EMAIL, password: PW });
+  const r = await post('/auth/signup', { email: EMAIL, password: PW, isAdult: true, acceptedTerms: true });
   if (r.status === 201) { signupCreated += 1; signupToken = r.json.token; }
   if (r.status === 429) { signup429 = { i, body: r.json }; break; }
 }

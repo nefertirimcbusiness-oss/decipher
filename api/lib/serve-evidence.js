@@ -1,6 +1,15 @@
 import path from 'path';
 import { query } from '../db.js';
 import { resolveEvidencePath } from './evidence-files.js';
+import { safeMimeForStoredType } from './evidence-sniff.js';
+
+// A download name safe to put in a header: no quotes, no separators, no control
+// characters, and nothing outside ASCII.
+function downloadName(filePath) {
+  const base = path.basename(filePath || 'evidence');
+  const cleaned = base.replace(/[^\w.\-]+/g, '_').replace(/^_+|_+$/g, '');
+  return cleaned || 'evidence';
+}
 
 // Serve one evidence file — but only to the user who owns the entry it belongs to.
 //
@@ -54,7 +63,25 @@ export async function serveEvidenceFile(req, res) {
       return res.status(404).json({ error: 'File not found' });
     }
 
-    if (owned.file_type) res.type(owned.file_type);
+    // Evidence is a user's own photograph or recording, and it is handed back as
+    // a download, never as a page.
+    //
+    // This used to call `res.type(owned.file_type)` — the type recorded at upload,
+    // which came from the client. A file declared as HTML and later fetched from
+    // this origin would run in a browser tab on the app's own domain. The type is
+    // now one of our own fixed values (or a generic binary), it is only ever
+    // offered as an attachment, and `nosniff` stops the browser second-guessing
+    // it. The CSP is a third belt: even if a file were opened directly, the page
+    // it lands in may load nothing and run nothing.
+    const safeMime = safeMimeForStoredType(owned.file_type) || 'application/octet-stream';
+
+    res.set({
+      'Content-Type': safeMime,
+      'X-Content-Type-Options': 'nosniff',
+      'Content-Disposition': `attachment; filename="${downloadName(owned.file_path)}"`,
+      'Content-Security-Policy': "default-src 'none'; sandbox",
+      'Cache-Control': 'private, no-store'
+    });
 
     return res.sendFile(absolute, (error) => {
       if (error && !res.headersSent) {
