@@ -58,10 +58,25 @@ async function request<T>(
 // --- Auth API ---
 
 export const auth = {
-  signup(email: string, password: string, name: string) {
+  // The API refuses a signup without both of these: the age gate answers 403
+  // ADULT_CONFIRMATION_REQUIRED, consent answers 403 TERMS_ACCEPTANCE_REQUIRED.
+  // The signup form asks both questions; this carries the answers to the server,
+  // which records is_adult, terms_version, terms_accepted_at and accepted_ip.
+  signup(
+    email: string,
+    password: string,
+    name: string,
+    consent: { isAdult: boolean; acceptedTerms: boolean }
+  ) {
     return request<{ token: string; userId: string }>("/auth/signup", {
       method: "POST",
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify({
+        email,
+        password,
+        name,
+        isAdult: consent.isAdult,
+        acceptedTerms: consent.acceptedTerms,
+      }),
     });
   },
 
@@ -146,6 +161,22 @@ export const entries = {
       body: JSON.stringify(data),
     });
   },
+
+  // "Remove this page". The API deletes the entry's evidence from disk first and
+  // only then the rows, so a failure here means nothing was removed.
+  remove(id: string) {
+    return request<{ message: string }>(`/entries/${id}`, { method: "DELETE" });
+  },
+};
+
+// --- Account API ---
+
+export const account = {
+  // "Close my scrapbook". The account acted on is the one the bearer token
+  // belongs to — there is no id to pass, so this can only ever delete your own.
+  close() {
+    return request<{ message: string }>("/account", { method: "DELETE" });
+  },
 };
 
 // --- Export API ("Save my scrapbook") ---
@@ -202,9 +233,19 @@ export const exportData = {
 
 // --- Savid API ---
 
+export interface SavidReply {
+  reply: string;
+  // The API checks the user's own words for crisis language before it calls the
+  // model, so `crisis_message` arrives even when the model is rate-limited or
+  // errors. When it is set, the client shows it as Savid's own bubble and the
+  // model's reply (if any) follows it — never instead of it.
+  crisis?: boolean;
+  crisis_message?: string;
+}
+
 export const savid = {
   chat(entryId: string, message: string) {
-    return request<{ reply: string }>("/savid/chat", {
+    return request<SavidReply>("/savid/chat", {
       method: "POST",
       body: JSON.stringify({ entryId, message }),
     });
