@@ -319,8 +319,71 @@ async function main() {
     `status=${otherStillWorks.status}`
   );
 
-  db.close();
+  // --- 8. deleting the account ends its sessions ---------------------------
+  // A token is a key to an account. Once the account is gone the key must not
+  // still turn, on any device — not just the one that asked for the deletion.
+  const closingEmail = `closing.${stamp}@example.com`;
+  const closing = await postJson('/api/auth/signup', {
+    email: closingEmail,
+    password: PW,
+    isAdult: true,
+    acceptedTerms: true
+  });
+  record('the account to be closed can sign up', closing.status === 201, `status=${closing.status}`);
+  const closingToken = closing.json.token;
+  const closingUserId = closing.json.userId;
 
+  const closingLogin = await postJson('/api/auth/login', { email: closingEmail, password: PW });
+  const secondDeviceToken = closingLogin.json.token;
+  record(
+    'that account holds a second, independent session',
+    closingLogin.status === 200 && !!secondDeviceToken,
+    `status=${closingLogin.status}`
+  );
+
+  const beforeDelete = await fetch(`${BASE}/api/entries`, {
+    headers: { Authorization: `Bearer ${closingToken}` }
+  });
+  record('its token works before the account is deleted', beforeDelete.status === 200, `status=${beforeDelete.status}`);
+
+  const deletion = await fetch(`${BASE}/api/account`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${closingToken}` }
+  });
+  record('deleting the account succeeds', deletion.status === 200, `status=${deletion.status}`);
+
+  const afterDelete = await fetch(`${BASE}/api/entries`, {
+    headers: { Authorization: `Bearer ${closingToken}` }
+  });
+  const afterDeleteBody = await afterDelete.json().catch(() => ({}));
+  record(
+    'the token used to delete the account is refused afterwards',
+    afterDelete.status === 401,
+    `status=${afterDelete.status} ${afterDeleteBody.error || ''}`
+  );
+
+  const secondDeviceAfter = await fetch(`${BASE}/api/entries`, {
+    headers: { Authorization: `Bearer ${secondDeviceToken}` }
+  });
+  record(
+    "the account's other session is refused too, not just the one that deleted it",
+    secondDeviceAfter.status === 401,
+    `status=${secondDeviceAfter.status}`
+  );
+
+  const writeAfterDelete = await uploadFiles(secondDeviceToken, [
+    new File([PNG_BYTES], 'after-delete.png', { type: 'image/png' })
+  ]);
+  record(
+    'a token for a deleted account cannot write either',
+    writeAfterDelete.status === 401,
+    `status=${writeAfterDelete.status}`
+  );
+
+  const stillThere = db.prepare('SELECT COUNT(*) AS n FROM users WHERE id = ?').get(closingUserId);
+  record('the account row is really gone', stillThere.n === 0, `rows=${stillThere.n}`);
+
+  db.close();
   const passed = results.filter((r) => r.ok).length;
   console.log(`\n${passed}/${results.length} safety checks passed`);
   stopServer();

@@ -35,7 +35,7 @@ export default (req, res, next) => {
   // Signing out revokes the token server-side; from then on it is refused here,
   // however long it has left to run.
   try {
-    if (isRevoked(decoded.jti)) {
+    if (isRevoked(decoded.jti, decoded.userId)) {
       return res.status(401).json({ error: 'Your session has ended. Please sign in again.' });
     }
   } catch (error) {

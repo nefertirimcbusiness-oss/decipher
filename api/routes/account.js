@@ -3,6 +3,7 @@ const router = express.Router();
 import Stripe from 'stripe';
 import auth from '../middleware/auth.js';
 import { deleteAccount } from '../lib/account-deletion.js';
+import { revokeToken, revokeAllForUser } from '../lib/session.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -36,6 +37,23 @@ router.delete('/', async (req, res) => {
     }
 
     console.log(`Account deleted: ${result.user.id} (${result.user.email})`);
+
+    // The account is gone; its sessions must go with it. The token that made this
+    // request is revoked through the same path sign-out uses, and a single
+    // user-wide revocation row ends every other session the account holds — a
+    // second device, an old tab — so no token outlives the data it was a key to.
+    // Deletion has already happened at this point, so a revocation failure is
+    // logged rather than reported as a failed deletion: retrying the delete would
+    // only find the account missing.
+    try {
+      revokeToken({ jti: req.tokenId, userId, exp: req.tokenExp });
+      revokeAllForUser(userId);
+    } catch (revokeError) {
+      console.error('Account deleted but session revocation failed:', revokeError.message, {
+        userId
+      });
+    }
+
     return res.json({
       message: 'Account deleted',
       deleted: result.deleted,
